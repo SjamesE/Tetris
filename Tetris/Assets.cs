@@ -21,13 +21,13 @@ namespace Tetris
             Block = new List<Texture>();
 
             // Load Background Texture
-            Background = new Texture("Assests/Background.png");
+            Background = new Texture("Assets/Background.png");
 
             // Load Block Textures
-            Block.Append(new Texture("Assests/blocks32.png", new IntRect(256, 0, 32, 32)));
+            Block.Add(new Texture("Assets/blocks32.png", new IntRect(256, 0, 32, 32)));
             for (int i = 0; i < 8; i++)
             {
-                Block.Append(new Texture("Assests/blocks32.png", new IntRect(i * 32, 0, 32, 32)));
+                Block.Add(new Texture("Assets/blocks32.png", new IntRect(i * 32, 0, 32, 32)));
             }
         }
     }

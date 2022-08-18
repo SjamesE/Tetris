@@ -7,8 +7,8 @@ namespace Tetris
     {
         public static RenderWindow RenderWindow { get; private set; }
 
-        public static uint WINDOW_HEIGHT = 720;
-        public static uint WINDOW_WIDTH = 480;
+        public static uint WINDOW_WIDTH = 601;
+        public static uint WINDOW_HEIGHT = 665;
 
         static Window()
         {

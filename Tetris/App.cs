@@ -1,5 +1,4 @@
-﻿
-namespace Tetris
+﻿namespace Tetris
 {
     public class App
     {
@@ -7,6 +6,7 @@ namespace Tetris
         public static readonly float FRAME_TIME = 1f / TARGET_FPS;
 
         private Draw draw = new Draw();
+        private MainLogic mainLogic = new MainLogic();
 
         /// <summary>
         /// App core loop
@@ -36,7 +36,9 @@ namespace Tetris
         private void Update()
         {
             Window.RenderWindow.DispatchEvents();
-            draw.Update();
+
+            mainLogic.Update();
+            draw.Update(mainLogic.Grid.Data);
         }
     }
 }
