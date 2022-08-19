@@ -8,8 +8,13 @@ namespace Tetris
         private readonly Color backgroundColor = Color.Black;
         private readonly Vector2i offset = new Vector2i(147, 621);
 
-        public void Update(List<List<int>> gridData)
+        public void Update(MainLogic mainLogic)
         {
+            List<List<int>> gridData = mainLogic.Grid.Data;
+            Tetromino currTetromino = mainLogic.CurrTetromino;
+            bool[]? currTetrominoData = Tetrominos.GetByID(currTetromino.type);
+            int size = currTetromino.GetSize();
+
             Window.RenderWindow.Clear(backgroundColor);
             Sprite sprite;
 
@@ -24,6 +29,19 @@ namespace Tetris
                 {
                     sprite = new Sprite(Assets.Block[gridData[y][x]]);
                     sprite.Position = new SFML.System.Vector2f(offset.x + 32 * x, offset.y - 32 * y);
+                    Window.RenderWindow.Draw(sprite);
+                }
+            }
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    int index = y * size + x;
+                    if (!currTetrominoData[index]) continue;
+
+                    sprite = new Sprite(Assets.Block[currTetromino.type]);
+                    sprite.Position = new SFML.System.Vector2f(offset.x + 32 * (currTetromino.pos.x + x), offset.y - 32 * (currTetromino.pos.y + y));
                     Window.RenderWindow.Draw(sprite);
                 }
             }

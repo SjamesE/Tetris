@@ -21,10 +21,15 @@ namespace Tetris
         public static void Update()
         {
             totalTime = clock.ElapsedTime.AsSeconds();
-            deltaTime = totalTime - lastTime;
-            //Console.WriteLine(deltaTime.ToString());
+            deltaTime += totalTime - lastTime;
+            //Console.WriteLine(deltaTime);
 
             lastTime = totalTime;
+        }
+
+        public static void NextFrame()
+        {
+            deltaTime = 0;
         }
     }
 }

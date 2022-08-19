@@ -21,12 +21,11 @@
             {
                 Time.Update();
 
-                if (timeTillUpdate < 0)
+                if (timeTillUpdate < Time.deltaTime)
                 {
-                    timeTillUpdate = FRAME_TIME;
                     Update();
+                    Time.NextFrame();
                 }
-                else timeTillUpdate -= Time.deltaTime;
             }
         }
 
@@ -38,7 +37,7 @@
             Window.RenderWindow.DispatchEvents();
 
             mainLogic.Update();
-            draw.Update(mainLogic.Grid.Data);
+            draw.Update(mainLogic);
         }
     }
 }
