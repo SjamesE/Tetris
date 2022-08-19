@@ -47,23 +47,23 @@ namespace Tetris
             false, false, false, false  // 0 0 0 0
         };
 
-        public static bool[]? GetByID(int ID)
+        public static bool[] GetByID(int ID)
         {
             switch (ID)
             {
-                case 0:
-                    return S;
                 case 1:
-                    return Z;
+                    return S;
                 case 2:
-                    return J;
+                    return Z;
                 case 3:
-                    return L;
+                    return J;
                 case 4:
-                    return T;
+                    return L;
                 case 5:
-                    return O;
+                    return T;
                 case 6:
+                    return O;
+                case 7:
                     return I;
                 default:
                     return null;
@@ -76,18 +76,16 @@ namespace Tetris
         public Vector2i pos;
         public int type;
         public int rotation;
+        public bool[] data;
+        public int size;
 
         public Tetromino(int ID)
         {
-            pos = new Vector2i(3, 18);
+            pos = (ID != 6) ? new Vector2i(3, 18) : new Vector2i(4, 18);
             type = ID;
             rotation = 0;
-        }
-
-        public int GetSize()
-        {
-            int length = Tetrominos.GetByID(type).Length;
-            return (length == 9) ? 3 : (length == 4) ? 2 : 4;
+            data = Tetrominos.GetByID(ID);
+            size = (data.Length == 9) ? 3 : (data.Length== 4) ? 2 : 4;
         }
     }
 
@@ -97,28 +95,49 @@ namespace Tetris
         public Grid()
         {
             // Initialize Grid Data
-            List<int> list = new List<int>();
-            for (int i = 0; i < 10; i++) list.Add(0);
-            for (int i = 0; i < 20; i++) Data.Add(list);
+            for (int i = 0; i < 20; i++)
+            {
+                List<int> list = new List<int>();
+                for (int j = 0; j < 10; j++) list.Add(0);
+                Data.Add(list);
+            }
         }
 
         public void Place(Tetromino tetromino)
         {
-            bool[]? tetrominoData = Tetrominos.GetByID(tetromino.type);
-            if (tetrominoData == null) throw new NullReferenceException();
+            if (tetromino.data == null) throw new NullReferenceException();
 
-            int size = tetromino.GetSize();
-
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < tetromino.size; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < tetromino.size; x++)
                 {
-                    int index = y * size + x;
-                    if (!tetrominoData[index]) continue;
+                    int index = y * tetromino.size + x;
+                    if (!tetromino.data[index]) continue;
 
-                    Data[y][x] = tetromino.type;
+                    Data[tetromino.pos.y + y][tetromino.pos.x + x] = tetromino.type;
                 }
             }
+        }
+
+        public bool CheckCollisionBelow(Tetromino tetromino)
+        {
+            for (int y = -1; y < tetromino.size - 1; y++)
+            {
+                for (int x = 0; x < tetromino.size; x++)
+                {
+                    int index = (y + 1) * tetromino.size + x;
+                    if (!tetromino.data[index]) continue;
+                    
+                    int _x = tetromino.pos.x + x;
+                    int _y = tetromino.pos.y + y;
+
+                    if (_y > 19) continue;
+                    if (_y < 0) return true;
+                    if (Data[_y][_x] != 0) return true;
+                }
+            }
+
+            return false;
         }
     }
 
@@ -130,6 +149,7 @@ namespace Tetris
 
         public float dropDefaultTime = 0.5f;
         public float timeTillDrop;
+        private float levelDifficulty = 5;
 
 
         public MainLogic()
@@ -144,21 +164,20 @@ namespace Tetris
 
         public void Update()
         {
-            timeTillDrop -= Time.deltaTime;
-            //Console.WriteLine(Time.deltaTime);
+            timeTillDrop -= Time.deltaTime * levelDifficulty;
 
             if (timeTillDrop < 0)
             {
-                CurrTetromino.pos.y--;
-
-                if (CurrTetromino.pos.y < 0)
+                if (Grid.CheckCollisionBelow(CurrTetromino))
                 {
                     Grid.Place(CurrTetromino);
                     GetNextTetromino();
-                }
+                } else CurrTetromino.pos.y--;
 
                 timeTillDrop = dropDefaultTime;
             }
+
+            CheckInput();
         }
 
         public void GetNextTetromino()
@@ -171,7 +190,7 @@ namespace Tetris
 
         public void GetNextBag()
         {
-            List<int> avaliableTetrominos = new List<int> { 0, 1, 2, 3, 4, 5, 6};
+            List<int> avaliableTetrominos = new List<int> { 1, 2, 3, 4, 5, 6, 7};
 
             for (int i = 0; i < 7; i++)
             {
@@ -180,6 +199,58 @@ namespace Tetris
 
                 NextTetrominos.Add(avaliableTetrominos[rnd]);
                 avaliableTetrominos.RemoveAt(rnd);
+            }
+        }
+
+        private void CheckInput()
+        {
+            // Left Button - Shift to the left
+            if (Input.Keyboard.Left == KeyState.down)
+            {
+                if (CurrTetromino.pos.x != 0) CurrTetromino.pos.x--;
+            }
+
+            // Right Button - Shift to the right
+            if (Input.Keyboard.Right == KeyState.down)
+            {
+                if (CurrTetromino.pos.x + CurrTetromino.size < 10) CurrTetromino.pos.x++;
+            }
+
+            // Up Button - Place
+            if (Input.Keyboard.Up == KeyState.down)
+            {
+                Grid.Place(CurrTetromino);
+                GetNextTetromino();
+            }
+
+            // Down Button - Increase falling speed
+            if (Input.Keyboard.Down == KeyState.down)
+            {
+                levelDifficulty *= 5;
+            }
+
+            // Down Button Up - Increase falling speed
+            if (Input.Keyboard.Down == KeyState.up)
+            {
+                levelDifficulty /= 5;
+            }
+
+            // Z Button
+            if (Input.Keyboard.Z == KeyState.down)
+            {
+                //TODO
+            }
+
+            // X Button
+            if (Input.Keyboard.X == KeyState.down)
+            {
+                //TODO
+            }
+
+            // C Button
+            if (Input.Keyboard.C == KeyState.down)
+            {
+                //TODO
             }
         }
     }

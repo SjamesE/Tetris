@@ -16,6 +16,8 @@
             Assets.LoadAssets();
 
             float timeTillUpdate = FRAME_TIME;
+            //Window.RenderWindow.KeyPressed  += Input.OnKeyPress;
+            //Window.RenderWindow.KeyReleased += Input.OnKeyReleased;
 
             while (Window.RenderWindow.IsOpen)
             {
@@ -23,6 +25,7 @@
 
                 if (timeTillUpdate < Time.deltaTime)
                 {
+                    Input.Update();
                     Update();
                     Time.NextFrame();
                 }
