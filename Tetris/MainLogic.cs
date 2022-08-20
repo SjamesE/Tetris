@@ -81,11 +81,11 @@ namespace Tetris
 
         public Tetromino(int ID)
         {
-            pos = (ID != 6) ? new Vector2i(3, 18) : new Vector2i(4, 18);
+            pos = (ID == 6) ? new Vector2i(4, 19) : (ID == 7) ? new Vector2i(3, 18) : new Vector2i(3, 18);
             type = ID;
             rotation = 0;
-            data = Tetrominos.GetByID(ID);
-            size = (data.Length == 9) ? 3 : (data.Length== 4) ? 2 : 4;
+            data = (bool[])Tetrominos.GetByID(ID).Clone();
+            size = (data.Length == 9) ? 3 : (data.Length == 4) ? 2 : 4;
         }
     }
 
@@ -119,20 +119,21 @@ namespace Tetris
             }
         }
 
-        public bool CheckCollisionBelow(Tetromino tetromino)
+        public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
         {
-            for (int y = -1; y < tetromino.size - 1; y++)
+            for (int y = 0; y < tetromino.size; y++)
             {
                 for (int x = 0; x < tetromino.size; x++)
                 {
-                    int index = (y + 1) * tetromino.size + x;
+                    int index = y * tetromino.size + x;
                     if (!tetromino.data[index]) continue;
                     
-                    int _x = tetromino.pos.x + x;
-                    int _y = tetromino.pos.y + y;
+                    int _x = tetromino.pos.x + x + dX;
+                    int _y = tetromino.pos.y + y + dY;
 
+                    if (_x < 0 || _x > 9 || _y < 0) return true;
                     if (_y > 19) continue;
-                    if (_y < 0) return true;
+
                     if (Data[_y][_x] != 0) return true;
                 }
             }
@@ -149,7 +150,11 @@ namespace Tetris
 
         public float dropDefaultTime = 0.5f;
         public float timeTillDrop;
-        private float levelDifficulty = 5;
+        private float levelDifficulty = 1;
+
+        private float DASInitialDelay = 0.13f;
+        private float DASDelay = 0.08f;
+        private float DASTimer = -1;
 
 
         public MainLogic()
@@ -168,7 +173,7 @@ namespace Tetris
 
             if (timeTillDrop < 0)
             {
-                if (Grid.CheckCollisionBelow(CurrTetromino))
+                if (Grid.CheckCollisionAt(CurrTetromino, 0, -1))
                 {
                     Grid.Place(CurrTetromino);
                     GetNextTetromino();
@@ -204,17 +209,44 @@ namespace Tetris
 
         private void CheckInput()
         {
-            // Left Button - Shift to the left
+            // Left Button - Shift to the left with DAS
             if (Input.Keyboard.Left == KeyState.down)
             {
-                if (CurrTetromino.pos.x != 0) CurrTetromino.pos.x--;
+                if (!Grid.CheckCollisionAt(CurrTetromino, -1, 0)) CurrTetromino.pos.x--;
+
+                DASTimer = DASInitialDelay;
+
+            } else if (Input.Keyboard.Left == KeyState.pressed)
+            {
+                DASTimer -= Time.deltaTime;
+                if (DASTimer < 0)
+                {
+                    if (!Grid.CheckCollisionAt(CurrTetromino, -1, 0)) CurrTetromino.pos.x--;
+
+                    DASTimer = DASDelay;
+                }
             }
 
-            // Right Button - Shift to the right
+            // Right Button - Shift to the right with DAS
             if (Input.Keyboard.Right == KeyState.down)
             {
-                if (CurrTetromino.pos.x + CurrTetromino.size < 10) CurrTetromino.pos.x++;
+                if (!Grid.CheckCollisionAt(CurrTetromino, 1, 0)) CurrTetromino.pos.x++;
+
+                DASTimer = DASInitialDelay;
+
+            } else if (Input.Keyboard.Right == KeyState.pressed)
+            {
+                DASTimer -= Time.deltaTime;
+                if (DASTimer < 0)
+                {
+                    if (!Grid.CheckCollisionAt(CurrTetromino, 1, 0)) CurrTetromino.pos.x++;
+
+                    DASTimer = DASDelay;
+                }
             }
+
+            // Reset DAS timer if movement button is up
+            if (Input.Keyboard.Left == KeyState.up || Input.Keyboard.Right == KeyState.up) DASTimer = -1;
 
             // Up Button - Place
             if (Input.Keyboard.Up == KeyState.down)
@@ -238,13 +270,13 @@ namespace Tetris
             // Z Button
             if (Input.Keyboard.Z == KeyState.down)
             {
-                //TODO
+                RotateLeft();
             }
 
             // X Button
             if (Input.Keyboard.X == KeyState.down)
             {
-                //TODO
+                RotateRight();
             }
 
             // C Button
@@ -252,6 +284,66 @@ namespace Tetris
             {
                 //TODO
             }
+        }
+
+        private void RotateLeft()
+        {
+            bool[] temp = (bool[])CurrTetromino.data.Clone();
+            if (CurrTetromino.size == 3)
+            {
+                for (int y = 0; y < CurrTetromino.size; y++)
+                {
+                    for (int x = 0; x < CurrTetromino.size; x++)
+                    {
+                        int index  = y * CurrTetromino.size + x;
+                        int index2 = 2 - y + x * 3;
+                        CurrTetromino.data[index] = temp[index2];
+                    }
+                }
+            }
+            else if (CurrTetromino.size == 4)
+            {
+                for (int y = 0; y < CurrTetromino.size; y++)
+                {
+                    for (int x = 0; x < CurrTetromino.size; x++)
+                    {
+                        int index = y * CurrTetromino.size + x;
+                        int index2 = 3 - y + x * 4;
+                        CurrTetromino.data[index] = temp[index2];
+                    }
+                }
+            }
+            if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateRight();
+        }
+
+        private void RotateRight()
+        {
+            bool[] temp = (bool[])CurrTetromino.data.Clone();
+            if (CurrTetromino.size == 3)
+            {
+                for (int y = 0; y < CurrTetromino.size; y++)
+                {
+                    for (int x = 0; x < CurrTetromino.size; x++)
+                    {
+                        int index = y * CurrTetromino.size + x;
+                        int index2 = y + 6 - x * 3;
+                        CurrTetromino.data[index] = temp[index2];
+                    }
+                }
+            }
+            else if (CurrTetromino.size == 4)
+            {
+                for (int y = 0; y < CurrTetromino.size; y++)
+                {
+                    for (int x = 0; x < CurrTetromino.size; x++)
+                    {
+                        int index = y * CurrTetromino.size + x;
+                        int index2 = y + 12 - x * 4;
+                        CurrTetromino.data[index] = temp[index2];
+                    }
+                }
+            }
+            if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateLeft();
         }
     }
 }
