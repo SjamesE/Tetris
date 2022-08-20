@@ -53,16 +53,16 @@ namespace Tetris
         public KeyState X = KeyState.released; 
         public KeyState Y = KeyState.released; 
         public KeyState Z = KeyState.released; 
-        public KeyState Nr0 = KeyState.released; 
-        public KeyState Nr1 = KeyState.released; 
-        public KeyState Nr2 = KeyState.released; 
-        public KeyState Nr3 = KeyState.released; 
-        public KeyState Nr4 = KeyState.released; 
-        public KeyState Nr5 = KeyState.released; 
-        public KeyState Nr6 = KeyState.released; 
-        public KeyState Nr7 = KeyState.released; 
-        public KeyState Nr8 = KeyState.released; 
-        public KeyState Nr9 = KeyState.released; 
+        public KeyState Num0 = KeyState.released;
+        public KeyState Num1 = KeyState.released; 
+        public KeyState Num2 = KeyState.released; 
+        public KeyState Num3 = KeyState.released; 
+        public KeyState Num4 = KeyState.released; 
+        public KeyState Num5 = KeyState.released; 
+        public KeyState Num6 = KeyState.released; 
+        public KeyState Num7 = KeyState.released; 
+        public KeyState Num8 = KeyState.released; 
+        public KeyState Num9 = KeyState.released; 
         public KeyState Numpad0 = KeyState.released; 
         public KeyState Numpad1 = KeyState.released; 
         public KeyState Numpad2 = KeyState.released; 
@@ -85,14 +85,14 @@ namespace Tetris
         public KeyState F10 = KeyState.released; 
         public KeyState F11 = KeyState.released; 
         public KeyState F12 = KeyState.released; 
-        public KeyState LCtrl = KeyState.released; 
-        public KeyState RCtrl = KeyState.released; 
+        public KeyState LControl = KeyState.released; 
+        public KeyState RControl = KeyState.released; 
         public KeyState LShift = KeyState.released; 
         public KeyState RShift = KeyState.released; 
         public KeyState LAlt = KeyState.released; 
         public KeyState RAlt = KeyState.released; 
-        public KeyState LSys = KeyState.released; 
-        public KeyState RSys = KeyState.released; 
+        public KeyState LSystem = KeyState.released; 
+        public KeyState RSystem = KeyState.released; 
         public KeyState PageUp = KeyState.released; 
         public KeyState PageDown = KeyState.released; 
         public KeyState Home = KeyState.released; 
@@ -106,7 +106,7 @@ namespace Tetris
         public KeyState Enter = KeyState.released; 
         public KeyState Tab = KeyState.released; 
         public KeyState Space = KeyState.released; 
-        public KeyState Esc = KeyState.released; 
+        public KeyState Escape = KeyState.released; 
         public KeyState Add = KeyState.released; 
         public KeyState Subtract = KeyState.released; 
         public KeyState Divide = KeyState.released; 
@@ -119,14 +119,13 @@ namespace Tetris
         public KeyState RBracket = KeyState.released; 
         public KeyState Semicolon = KeyState.released; 
         public KeyState Comma = KeyState.released; 
-        public KeyState Perios = KeyState.released; 
+        public KeyState Period = KeyState.released; 
         public KeyState Slash = KeyState.released; 
         public KeyState Backslash = KeyState.released; 
         public KeyState Tilde = KeyState.released; 
         public KeyState Equal = KeyState.released; 
         public KeyState Hyphen = KeyState.released;
         public KeyState Quote = KeyState.released;
-        public KeyState Period = KeyState.released;
     }
 
     public static class Input
