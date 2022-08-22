@@ -58,6 +58,22 @@ namespace Tetris
                 Window.RenderWindow.Draw(sprite);
             }
 
+            // Draw Ghost
+            Vector2i ghostPos = mainLogic.Grid.GetPlacePos(currTetromino);
+            for (int y = 0; y < currTetromino.size; y++)
+            {
+                for (int x = 0; x < currTetromino.size; x++)
+                {
+                    int index = y * currTetromino.size + x;
+                    if (!currTetromino.data[index]) continue;
+
+                    sprite = new Sprite(Assets.Block[currTetromino.type]);
+                    sprite.Position = new SFML.System.Vector2f(gridOffset.x + 32 * (ghostPos.x + x), gridOffset.y - 32 * (ghostPos.y + y));
+                    sprite.Color = new Color(255, 255, 255, 100);
+                    Window.RenderWindow.Draw(sprite);
+                }
+            }
+
             Window.RenderWindow.Display();
         }
     }

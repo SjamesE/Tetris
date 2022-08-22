@@ -107,6 +107,8 @@ namespace Tetris
         {
             if (tetromino.data == null) throw new NullReferenceException();
 
+            Vector2i placePos = GetPlacePos(tetromino);
+
             for (int y = 0; y < tetromino.size; y++)
             {
                 for (int x = 0; x < tetromino.size; x++)
@@ -114,9 +116,11 @@ namespace Tetris
                     int index = y * tetromino.size + x;
                     if (!tetromino.data[index]) continue;
 
-                    Data[tetromino.pos.y + y][tetromino.pos.x + x] = tetromino.type;
+                    Data[placePos.y + y][placePos.x + x] = tetromino.type;
                 }
             }
+
+            ClearLines();
         }
 
         public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
@@ -139,6 +143,46 @@ namespace Tetris
             }
 
             return false;
+        }
+
+        public Vector2i GetPlacePos(Tetromino tetromino)
+        {
+            for (int i = 0; i < 21; i++)
+            {
+                if (CheckCollisionAt(tetromino, 0, -i))
+                    return new Vector2i(tetromino.pos.x, tetromino.pos.y - i + 1);
+            }
+
+            throw new Exception();
+        }
+
+        public void ClearLines()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                bool isComplete = true;
+                foreach (var square in Data[i])
+                {
+                    if (square == 0)
+                    {
+                        isComplete = false;
+                        break;
+                    }
+                }
+                if (isComplete)
+                {
+                    ClearLine(i);
+                }
+            }
+        }
+
+        public void ClearLine(int i)
+        {
+            for (int j = 0; j < 20; j++)
+            {
+                if ((i + j) == 19) break;
+                Data[i + j] = Data[i + j + 1];
+            }
         }
     }
 
@@ -286,7 +330,7 @@ namespace Tetris
             }
         }
 
-        private void RotateLeft()
+        private void RotateRight()
         {
             bool[] temp = (bool[])CurrTetromino.data.Clone();
             if (CurrTetromino.size == 3)
@@ -316,7 +360,7 @@ namespace Tetris
             if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateRight();
         }
 
-        private void RotateRight()
+        private void RotateLeft()
         {
             bool[] temp = (bool[])CurrTetromino.data.Clone();
             if (CurrTetromino.size == 3)
