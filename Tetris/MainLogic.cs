@@ -108,18 +108,19 @@ namespace Tetris
             if (tetromino.data == null) throw new NullReferenceException();
 
             Vector2i placePos = GetPlacePos(tetromino);
-
+            Console.WriteLine("Piece placed at: " + placePos);
             for (int y = 0; y < tetromino.size; y++)
             {
                 for (int x = 0; x < tetromino.size; x++)
                 {
                     int index = y * tetromino.size + x;
                     if (!tetromino.data[index]) continue;
+                    Console.WriteLine("Square placed at: " + (placePos.y + y) + ", " + (placePos.x + x) + " with index of: " + index);
 
                     Data[placePos.y + y][placePos.x + x] = tetromino.type;
                 }
             }
-
+            Console.WriteLine("----------");
             ClearLines();
         }
 
@@ -172,6 +173,7 @@ namespace Tetris
                 if (isComplete)
                 {
                     ClearLine(i);
+                    i--;
                 }
             }
         }
@@ -182,7 +184,12 @@ namespace Tetris
             {
                 if ((i + j) == 19) break;
                 Data[i + j] = Data[i + j + 1];
+
             }
+            List<int> list = new List<int>();
+            for (int j = 0; j < 10; j++) list.Add(0);
+
+            Data[19] = list;
         }
     }
 
