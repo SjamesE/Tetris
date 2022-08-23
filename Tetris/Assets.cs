@@ -15,6 +15,7 @@ namespace Tetris
         public static List<Texture> Tetrominos { get; private set; }
         public static List<Texture> Block { get; private set; }
         public static List<Texture> Preview { get; private set; }
+        public static Font Font { get; private set; }
 
         static Assets()
         {
@@ -47,6 +48,9 @@ namespace Tetris
             Texture temp = Preview[2];
             Preview[2] = Preview[3];
             Preview[3] = temp;
+
+            // Load font
+            Font = new Font("Assets/Font.ttf");
         }
     }
 }

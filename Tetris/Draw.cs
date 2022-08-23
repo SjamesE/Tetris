@@ -8,6 +8,8 @@ namespace Tetris
         private readonly Color backgroundColor = Color.Black;
         private readonly Vector2i gridOffset = new Vector2i(147, 621);
         private readonly Vector2i nextOffset = new Vector2i(503, 88);
+        private readonly int textPosL = 70;
+        private readonly int textPosR = 535;
 
         public void Update(MainLogic mainLogic)
         {
@@ -73,6 +75,40 @@ namespace Tetris
                     Window.RenderWindow.Draw(sprite);
                 }
             }
+
+            // Draw Score
+            Text scoreText = new Text("Score", Assets.Font);
+            FloatRect fr = scoreText.GetLocalBounds();
+            scoreText.Position = new SFML.System.Vector2f(textPosL - fr.Width / 2, 200);
+            Window.RenderWindow.Draw(scoreText);
+
+            Text score = new Text(mainLogic.score.Total.ToString(), Assets.Font);
+            FloatRect fr1 = score.GetLocalBounds();
+            score.Position = new SFML.System.Vector2f(textPosL - fr1.Width / 2, 230);
+            Window.RenderWindow.Draw(score);
+
+            // Draw Next & Hold text
+            Text nextTxt = new Text("Next", Assets.Font);
+            FloatRect fr2 = nextTxt.GetLocalBounds();
+            nextTxt.Position = new SFML.System.Vector2f(textPosR - fr2.Width / 2, 25);
+            Window.RenderWindow.Draw(nextTxt);
+
+            Text hold = new Text("Hold", Assets.Font);
+            FloatRect fr3 = hold.GetLocalBounds();
+            hold.Position = new SFML.System.Vector2f(textPosL - fr3.Width / 2, 25);
+            Window.RenderWindow.Draw(hold);
+
+            // Draw Level
+            Text level = new Text("Level", Assets.Font);
+            FloatRect fr4 = level.GetLocalBounds();
+            level.Position = new SFML.System.Vector2f(textPosR - fr4.Width / 2, 500);
+            Window.RenderWindow.Draw(level);
+
+            Text levelNo = new Text(mainLogic.Level.ToString(), Assets.Font);
+            FloatRect fr5 = levelNo.GetLocalBounds();
+            levelNo.Position = new SFML.System.Vector2f(textPosR - fr5.Width / 2 - 10, 530);
+            levelNo.CharacterSize = 80;
+            Window.RenderWindow.Draw(levelNo);
 
             Window.RenderWindow.Display();
         }

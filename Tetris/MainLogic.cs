@@ -47,6 +47,30 @@ namespace Tetris
             false, false, false, false  // 0 0 0 0
         };
 
+        public static Vector2i[,] WallKick = new Vector2i[8, 4]
+        {//           0                    1                    2                     3
+            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }, // 0 > 1
+            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 0 > 3
+            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 1 > 2
+            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 1 > 0
+            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 2 > 3
+            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 2 > 1
+            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 3 > 0
+            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }  // 3 > 2
+        };
+        
+        public static Vector2i[,] WallKickI = new Vector2i[8, 4]
+        {//           0                    1                    2                     3
+            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }, // 0 > 1
+            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 0 > 3
+            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 1 > 2
+            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 1 > 0
+            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 2 > 3
+            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 2 > 1
+            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 3 > 0
+            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }  // 3 > 2
+        };
+
         public static bool[] GetByID(int ID)
         {
             switch (ID)
@@ -71,7 +95,7 @@ namespace Tetris
         }
     }
 
-    public struct Tetromino
+    public class Tetromino
     {
         public Vector2i pos;
         public int type;
@@ -107,6 +131,7 @@ namespace Tetris
             }
         }
 
+        // Place tetromino - return number of cleared lines
         public void Place(Tetromino tetromino)
         {
             // Get place position
@@ -126,7 +151,6 @@ namespace Tetris
                     Data[placePos.y + y][placePos.x + x] = tetromino.type;
                 }
             }
-            ClearLines();
         }
 
         public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
@@ -162,17 +186,19 @@ namespace Tetris
         {
             // For each iteration go one row down and check for collision
             // Return when collision was found
-            for (int i = 0; i < 21; i++)
+            for (int i = 0; i < 22; i++)
             {
                 if (CheckCollisionAt(tetromino, 0, -i))
                     return new Vector2i(tetromino.pos.x, tetromino.pos.y - i + 1);
             }
 
-            throw new Exception();
+            throw new Exception("No ghost pos was found");
         }
 
-        public void ClearLines()
+        public int ClearLines()
         {
+            int clearedLines = 0;
+
             for (int i = 0; i < 20; i++)
             {
                 // Check if line is complete
@@ -185,16 +211,20 @@ namespace Tetris
                         break;
                     }
                 }
+
                 // Clear line if complete
                 if (isComplete)
                 {
+                    clearedLines++;
                     ClearLine(i);
                     i--;
                 }
             }
+
+            return clearedLines;
         }
 
-        public void ClearLine(int i)
+        private void ClearLine(int i)
         {
             // Shift all rows above the i-th line one row down
             for (int j = 0; j < 20; j++)
@@ -216,6 +246,8 @@ namespace Tetris
         public Grid Grid { get; private set; }
         public List<int> NextTetrominos { get; private set; }
         public Tetromino CurrTetromino { get; private set; }
+        public Score score { get; private set; }
+        public int Level { get; private set; } = 1;
 
         public float dropDefaultTime = 0.5f;
         public float timeTillDrop;
@@ -224,6 +256,7 @@ namespace Tetris
         private float DASInitialDelay = 0.13f;
         private float DASDelay = 0.08f;
         private float DASTimer = -1;
+        private bool skipDrop = false;
 
 
         public MainLogic()
@@ -231,6 +264,7 @@ namespace Tetris
             timeTillDrop = dropDefaultTime;
             Grid = new Grid();
             NextTetrominos = new List<int>();
+            score = new Score();
 
             GetNextBag();
             GetNextTetromino();
@@ -240,16 +274,31 @@ namespace Tetris
         {
             timeTillDrop -= Time.deltaTime * levelDifficulty;
 
-            if (timeTillDrop < 0)
+            if (timeTillDrop < 0 || skipDrop)
             {
                 // Handle collision if there is one
                 if (Grid.CheckCollisionAt(CurrTetromino, 0, -1))
                 {
+                    // Place tetromino
                     Grid.Place(CurrTetromino);
+
+                    // Clear lines
+                    int clearedLines = Grid.ClearLines();
+
+                    // Update score
+                    if (clearedLines > 0) score.AddScore(clearedLines); else score.ComboReset();
+
+                    // Get next tetromino
                     GetNextTetromino();
-                } else CurrTetromino.pos.y--;
+                } else
+                {
+                    // Drop tetromino 1 square and update score
+                    CurrTetromino.pos.y--;
+                    score.SoftDropIncrement();
+                }
 
                 timeTillDrop = dropDefaultTime;
+                skipDrop = false;
             }
 
             CheckInput();
@@ -324,20 +373,24 @@ namespace Tetris
             // Up Button - Place
             if (Input.Keyboard.Up == KeyState.down)
             {
-                Grid.Place(CurrTetromino);
-                GetNextTetromino();
+                int y  = CurrTetromino.pos.y;
+                int y2 = Grid.GetPlacePos(CurrTetromino).y;
+                score.HardDropIncrement(y - y2);
+                skipDrop = true;
+
+                CurrTetromino.pos.y = y2;
             }
 
             // Down Button - Increase falling speed
             if (Input.Keyboard.Down == KeyState.down)
             {
-                levelDifficulty *= 5;
+                levelDifficulty *= 10;
             }
 
             // Down Button Up - Increase falling speed
             if (Input.Keyboard.Down == KeyState.up)
             {
-                levelDifficulty /= 5;
+                levelDifficulty /= 10;
             }
 
             // Z Button
@@ -361,6 +414,11 @@ namespace Tetris
 
         private void RotateRight()
         {
+            int wallKickIndex = GetKickIndex(CurrTetromino.rotation, true);
+
+            CurrTetromino.rotation++;
+            if (CurrTetromino.rotation > 3) CurrTetromino.rotation = 0;
+
             // New temp arr for storing new rotated tetromino
             bool[] temp = (bool[])CurrTetromino.data.Clone();
 
@@ -376,6 +434,19 @@ namespace Tetris
                         CurrTetromino.data[index] = temp[index2];
                     }
                 }
+                if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Vector2i kickOffset = Tetrominos.WallKick[wallKickIndex, i];
+                        if (!Grid.CheckCollisionAt(CurrTetromino, kickOffset.x, kickOffset.y))
+                        {
+                            CurrTetromino.pos.x += kickOffset.x;
+                            CurrTetromino.pos.y += kickOffset.y;
+                            return;
+                        }
+                    }
+                }
             }
             // Rotate tetromino for size 4
             else if (CurrTetromino.size == 4)
@@ -389,12 +460,30 @@ namespace Tetris
                         CurrTetromino.data[index] = temp[index2];
                     }
                 }
+                if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Vector2i kickOffset = Tetrominos.WallKickI[wallKickIndex, i];
+                        if (!Grid.CheckCollisionAt(CurrTetromino, kickOffset.x, kickOffset.y))
+                        {
+                            CurrTetromino.pos.x += kickOffset.x;
+                            CurrTetromino.pos.y += kickOffset.y;
+                            return;
+                        }
+                    }
+                }
             }
             if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateRight();
         }
 
         private void RotateLeft()
         {
+            int wallKickIndex = GetKickIndex(CurrTetromino.rotation, false);
+
+            CurrTetromino.rotation--;
+            if (CurrTetromino.rotation < 0) CurrTetromino.rotation = 3;
+            
             // New temp arr for storing new rotated tetromino
             bool[] temp = (bool[])CurrTetromino.data.Clone();
 
@@ -410,6 +499,19 @@ namespace Tetris
                         CurrTetromino.data[index] = temp[index2];
                     }
                 }
+                if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Vector2i kickOffset = Tetrominos.WallKick[wallKickIndex, i];
+                        if (!Grid.CheckCollisionAt(CurrTetromino, kickOffset.x, kickOffset.y))
+                        {
+                            CurrTetromino.pos.x += kickOffset.x;
+                            CurrTetromino.pos.y += kickOffset.y;
+                            return;
+                        }
+                    }
+                }
             }
             // Rotate tetromino for size 4
             else if (CurrTetromino.size == 4)
@@ -423,8 +525,38 @@ namespace Tetris
                         CurrTetromino.data[index] = temp[index2];
                     }
                 }
+                if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Vector2i kickOffset = Tetrominos.WallKickI[wallKickIndex, i];
+                        if (!Grid.CheckCollisionAt(CurrTetromino, kickOffset.x, kickOffset.y))
+                        {
+                            CurrTetromino.pos.x += kickOffset.x;
+                            CurrTetromino.pos.y += kickOffset.y;
+                            return;
+                        }
+                    }
+                }
             }
             if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateLeft();
+        }
+
+        private int GetKickIndex(int rotation, bool clockwise)
+        {
+            switch (rotation)
+            {
+                case 0:
+                    return (clockwise) ? 0 : 1;
+                case 1:
+                    return (clockwise) ? 2 : 3;
+                case 2:
+                    return (clockwise) ? 4 : 5;
+                case 3:
+                    return (clockwise) ? 6 : 7;
+                default:
+                    throw new ArgumentException("Rotation was not valid: " + rotation);
+            }
         }
     }
 }
