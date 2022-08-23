@@ -81,9 +81,12 @@ namespace Tetris
 
         public Tetromino(int ID)
         {
+            // Set position while accounting for tetromino size
             pos = (ID == 6) ? new Vector2i(4, 19) : (ID == 7) ? new Vector2i(3, 18) : new Vector2i(3, 18);
             type = ID;
             rotation = 0;
+
+            // Clone initial bool arr. Otherwise this var will share the same pointer as the initial arr which will lead to weird side effect
             data = (bool[])Tetrominos.GetByID(ID).Clone();
             size = (data.Length == 9) ? 3 : (data.Length == 4) ? 2 : 4;
         }
@@ -91,6 +94,7 @@ namespace Tetris
 
     public class Grid
     {
+        // 2D list of colors
         public List<List<int>> Data { get; private set; } = new List<List<int>>();
         public Grid()
         {
@@ -105,40 +109,48 @@ namespace Tetris
 
         public void Place(Tetromino tetromino)
         {
-            if (tetromino.data == null) throw new NullReferenceException();
-
+            // Get place position
             Vector2i placePos = GetPlacePos(tetromino);
-            Console.WriteLine("Piece placed at: " + placePos);
+
+            // Go through each element of the tetromino mesh
+            // If mesh not empty (false) place the tetromino type (color) in the grid data
             for (int y = 0; y < tetromino.size; y++)
             {
                 for (int x = 0; x < tetromino.size; x++)
                 {
                     int index = y * tetromino.size + x;
+
+                    // Continue if tetromino mesh at index is empty (false)
                     if (!tetromino.data[index]) continue;
-                    Console.WriteLine("Square placed at: " + (placePos.y + y) + ", " + (placePos.x + x) + " with index of: " + index);
 
                     Data[placePos.y + y][placePos.x + x] = tetromino.type;
                 }
             }
-            Console.WriteLine("----------");
             ClearLines();
         }
 
         public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
         {
+            // Compare the mesh of the tetromino to the mesh of the grid
             for (int y = 0; y < tetromino.size; y++)
             {
                 for (int x = 0; x < tetromino.size; x++)
                 {
                     int index = y * tetromino.size + x;
+                 
+                    // Continue if tetromino mesh at index is empty (false)
                     if (!tetromino.data[index]) continue;
                     
                     int _x = tetromino.pos.x + x + dX;
                     int _y = tetromino.pos.y + y + dY;
 
+                    // If tetromino mesh is outside of the playing area return true
                     if (_x < 0 || _x > 9 || _y < 0) return true;
+
+                    // Ignore any tetromino mesh that is above the playing area
                     if (_y > 19) continue;
 
+                    // Return true if overlap found
                     if (Data[_y][_x] != 0) return true;
                 }
             }
@@ -148,6 +160,8 @@ namespace Tetris
 
         public Vector2i GetPlacePos(Tetromino tetromino)
         {
+            // For each iteration go one row down and check for collision
+            // Return when collision was found
             for (int i = 0; i < 21; i++)
             {
                 if (CheckCollisionAt(tetromino, 0, -i))
@@ -161,6 +175,7 @@ namespace Tetris
         {
             for (int i = 0; i < 20; i++)
             {
+                // Check if line is complete
                 bool isComplete = true;
                 foreach (var square in Data[i])
                 {
@@ -170,6 +185,7 @@ namespace Tetris
                         break;
                     }
                 }
+                // Clear line if complete
                 if (isComplete)
                 {
                     ClearLine(i);
@@ -180,12 +196,14 @@ namespace Tetris
 
         public void ClearLine(int i)
         {
+            // Shift all rows above the i-th line one row down
             for (int j = 0; j < 20; j++)
             {
                 if ((i + j) == 19) break;
                 Data[i + j] = Data[i + j + 1];
-
             }
+
+            // Create a new line for the last row
             List<int> list = new List<int>();
             for (int j = 0; j < 10; j++) list.Add(0);
 
@@ -224,6 +242,7 @@ namespace Tetris
 
             if (timeTillDrop < 0)
             {
+                // Handle collision if there is one
                 if (Grid.CheckCollisionAt(CurrTetromino, 0, -1))
                 {
                     Grid.Place(CurrTetromino);
@@ -238,9 +257,11 @@ namespace Tetris
 
         public void GetNextTetromino()
         {
+            // Get next tetromino and remove it from the queue 
             CurrTetromino = new Tetromino(NextTetrominos[0]);
             NextTetrominos.RemoveAt(0);
 
+            // If the queue is shorter than 5 (the amount of tetrominos showed on the screen) get a new bag (7 tetrominos)
             if (NextTetrominos.Count < 5) GetNextBag();
         }
 
@@ -248,6 +269,7 @@ namespace Tetris
         {
             List<int> avaliableTetrominos = new List<int> { 1, 2, 3, 4, 5, 6, 7};
 
+            // Get one element of the above list at random and place it in the queue until the above list is empty
             for (int i = 0; i < 7; i++)
             {
                 Random random = new Random();
@@ -339,7 +361,10 @@ namespace Tetris
 
         private void RotateRight()
         {
+            // New temp arr for storing new rotated tetromino
             bool[] temp = (bool[])CurrTetromino.data.Clone();
+
+            // Rotate tetromino for size 3
             if (CurrTetromino.size == 3)
             {
                 for (int y = 0; y < CurrTetromino.size; y++)
@@ -352,6 +377,7 @@ namespace Tetris
                     }
                 }
             }
+            // Rotate tetromino for size 4
             else if (CurrTetromino.size == 4)
             {
                 for (int y = 0; y < CurrTetromino.size; y++)
@@ -369,7 +395,10 @@ namespace Tetris
 
         private void RotateLeft()
         {
+            // New temp arr for storing new rotated tetromino
             bool[] temp = (bool[])CurrTetromino.data.Clone();
+
+            // Rotate tetromino for size 3
             if (CurrTetromino.size == 3)
             {
                 for (int y = 0; y < CurrTetromino.size; y++)
@@ -382,6 +411,7 @@ namespace Tetris
                     }
                 }
             }
+            // Rotate tetromino for size 4
             else if (CurrTetromino.size == 4)
             {
                 for (int y = 0; y < CurrTetromino.size; y++)

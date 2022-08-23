@@ -7,7 +7,6 @@ namespace Tetris
         private static Clock clock;
 
         public static readonly float fixedDeltaTime = 1f / 60;
-
         public static float deltaTime { get; private set; }
         public static float totalTime { get; private set; }
 
@@ -22,7 +21,6 @@ namespace Tetris
         {
             totalTime = clock.ElapsedTime.AsSeconds();
             deltaTime += totalTime - lastTime;
-            //Console.WriteLine(deltaTime);
 
             lastTime = totalTime;
         }
