@@ -5,9 +5,10 @@ namespace Tetris
 {
     public class Draw
     {
-        private readonly Color backgroundColor = Color.Black;
-        private readonly Vector2i gridOffset = new Vector2i(147, 621);
-        private readonly Vector2i nextOffset = new Vector2i(503, 88);
+        private readonly Color backgroundColor  = Color.Black;
+        private readonly Vector2i gridOffset    = new Vector2i(147, 621);
+        private readonly Vector2i nextOffset    = new Vector2i(503, 88);
+        private readonly Vector2i holdingOffset = new Vector2i(36, 87);
         private readonly int textPosL = 70;
         private readonly int textPosR = 535;
 
@@ -53,9 +54,10 @@ namespace Tetris
             {
                 int next = mainLogic.NextTetrominos[i] - 1;
                 int offX = (next == 5) ? 12 : (next == 6) ? -12 : 0;
+                int offY = (next == 6) ? 12 : 0;
 
                 sprite = new Sprite(Assets.Preview[next]);
-                sprite.Position = new SFML.System.Vector2f(nextOffset.x + offX, nextOffset.y + 82 * i);
+                sprite.Position = new SFML.System.Vector2f(nextOffset.x + offX, nextOffset.y + 82 * i + offY);
                 sprite.Scale = new SFML.System.Vector2f(0.75f, 0.75f);
                 Window.RenderWindow.Draw(sprite);
             }
@@ -74,6 +76,20 @@ namespace Tetris
                     sprite.Color = new Color(255, 255, 255, 100);
                     Window.RenderWindow.Draw(sprite);
                 }
+            }
+
+            // Draw Holding
+            int? type = mainLogic.HoldingTetromino;
+            if (type != null)
+            {
+                type--;
+                int offX = (type == 5) ? 12 : (type == 6) ? -12 : 0;
+                int offY = (type == 6) ? 12 : 0;
+
+                sprite = new Sprite(Assets.Preview[(int)mainLogic.HoldingTetromino - 1]);
+                sprite.Position = new SFML.System.Vector2f(holdingOffset.x + offX, holdingOffset.y + offY);
+                sprite.Scale = new SFML.System.Vector2f(0.75f, 0.75f);
+                Window.RenderWindow.Draw(sprite);
             }
 
             // Draw Score
@@ -104,11 +120,22 @@ namespace Tetris
             level.Position = new SFML.System.Vector2f(textPosR - fr4.Width / 2, 500);
             Window.RenderWindow.Draw(level);
 
-            Text levelNo = new Text(mainLogic.Level.ToString(), Assets.Font);
+            Text levelNo = new Text(mainLogic.Level.Lvl.ToString(), Assets.Font);
             FloatRect fr5 = levelNo.GetLocalBounds();
             levelNo.Position = new SFML.System.Vector2f(textPosR - fr5.Width / 2 - 10, 530);
             levelNo.CharacterSize = 80;
             Window.RenderWindow.Draw(levelNo);
+
+            // Draw LinesTillLvlUp
+            Text lvlUpText = new Text("Lvl up in", Assets.Font);
+            FloatRect fr6 = lvlUpText.GetLocalBounds();
+            lvlUpText.Position = new SFML.System.Vector2f(textPosL - fr6.Width / 2, 280);
+            Window.RenderWindow.Draw(lvlUpText);
+
+            Text lvlUpNo = new Text(mainLogic.Level.LinesLeft.ToString() + "Lines", Assets.Font);
+            FloatRect fr7 = lvlUpNo.GetLocalBounds();
+            lvlUpNo.Position = new SFML.System.Vector2f(textPosL - fr7.Width / 2, 310);
+            Window.RenderWindow.Draw(lvlUpNo);
 
             Window.RenderWindow.Display();
         }

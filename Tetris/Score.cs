@@ -3,6 +3,7 @@
     public class Score
     {
         public int Total { get; private set; }
+        public int Lines { get; private set; }
         public int Triple { get; private set; }
         public int Tetris { get; private set; }
         public int TSpin { get; private set; }
@@ -16,6 +17,7 @@
         public void AddScore(int type)
         {
             int moveScore = 0;
+            Lines += type;
             switch (type)
             {
                 case 1: // Single

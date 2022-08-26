@@ -2,99 +2,6 @@
 
 namespace Tetris
 {
-    public static class Tetrominos
-    {
-        public static readonly bool[] S = new bool[9]
-        {
-            false, false, false, // 0 1 1
-             true,  true, false, // 1 1 0
-            false,  true,  true  // 0 0 0
-        };
-        public static readonly bool[] Z = new bool[9]
-        {
-            false, false, false, // 1 1 0
-            false,  true,  true, // 0 1 1
-             true,  true, false  // 0 0 0
-        };
-        public static readonly bool[] J = new bool[9]
-        {
-            false, false, false, // 1 0 0
-             true,  true,  true, // 1 1 1
-             true, false, false  // 0 0 0
-        };
-        public static readonly bool[] L = new bool[9]
-        {
-            false, false, false, // 0 0 1
-             true,  true,  true, // 1 1 1
-            false, false, true   // 0 0 0
-        };
-        public static readonly bool[] T = new bool[9]
-        {
-            false, false, false, // 0 1 0
-             true,  true,  true, // 1 1 1
-            false,  true, false  // 0 0 0
-        };
-        public static readonly bool[] O = new bool[4]
-        {
-             true,  true,        // 1 1
-             true,  true         // 1 1
-        };
-        public static readonly bool[] I = new bool[16]
-        {
-            false, false, false, false, // 0 0 0 0
-            false, false, false, false, // 1 1 1 1 
-             true,  true,  true,  true, // 0 0 0 0
-            false, false, false, false  // 0 0 0 0
-        };
-
-        public static Vector2i[,] WallKick = new Vector2i[8, 4]
-        {//           0                    1                    2                     3
-            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }, // 0 > 1
-            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 0 > 3
-            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 1 > 2
-            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 1 > 0
-            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 2 > 3
-            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 2 > 1
-            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 3 > 0
-            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }  // 3 > 2
-        };
-        
-        public static Vector2i[,] WallKickI = new Vector2i[8, 4]
-        {//           0                    1                    2                     3
-            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }, // 0 > 1
-            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 0 > 3
-            { new Vector2i(-1, 0), new Vector2i( 2, 0), new Vector2i(-1,  2), new Vector2i( 2, -1) }, // 1 > 2
-            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 1 > 0
-            { new Vector2i( 2, 0), new Vector2i(-1, 0), new Vector2i( 2,  1), new Vector2i(-1, -2) }, // 2 > 3
-            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 2 > 1
-            { new Vector2i( 1, 0), new Vector2i(-2, 0), new Vector2i( 1, -2), new Vector2i(-2,  1) }, // 3 > 0
-            { new Vector2i(-2, 0), new Vector2i( 1, 0), new Vector2i(-2, -1), new Vector2i( 1,  2) }  // 3 > 2
-        };
-
-        public static bool[] GetByID(int ID)
-        {
-            switch (ID)
-            {
-                case 1:
-                    return S;
-                case 2:
-                    return Z;
-                case 3:
-                    return J;
-                case 4:
-                    return L;
-                case 5:
-                    return T;
-                case 6:
-                    return O;
-                case 7:
-                    return I;
-                default:
-                    return null;
-            }
-        }
-    }
-
     public class Tetromino
     {
         public Vector2i pos;
@@ -116,155 +23,34 @@ namespace Tetris
         }
     }
 
-    public class Grid
-    {
-        // 2D list of colors
-        public List<List<int>> Data { get; private set; } = new List<List<int>>();
-        public Grid()
-        {
-            // Initialize Grid Data
-            for (int i = 0; i < 20; i++)
-            {
-                List<int> list = new List<int>();
-                for (int j = 0; j < 10; j++) list.Add(0);
-                Data.Add(list);
-            }
-        }
-
-        // Place tetromino - return number of cleared lines
-        public void Place(Tetromino tetromino)
-        {
-            // Get place position
-            Vector2i placePos = GetPlacePos(tetromino);
-
-            // Go through each element of the tetromino mesh
-            // If mesh not empty (false) place the tetromino type (color) in the grid data
-            for (int y = 0; y < tetromino.size; y++)
-            {
-                for (int x = 0; x < tetromino.size; x++)
-                {
-                    int index = y * tetromino.size + x;
-
-                    // Continue if tetromino mesh at index is empty (false)
-                    if (!tetromino.data[index]) continue;
-
-                    Data[placePos.y + y][placePos.x + x] = tetromino.type;
-                }
-            }
-        }
-
-        public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
-        {
-            // Compare the mesh of the tetromino to the mesh of the grid
-            for (int y = 0; y < tetromino.size; y++)
-            {
-                for (int x = 0; x < tetromino.size; x++)
-                {
-                    int index = y * tetromino.size + x;
-                 
-                    // Continue if tetromino mesh at index is empty (false)
-                    if (!tetromino.data[index]) continue;
-                    
-                    int _x = tetromino.pos.x + x + dX;
-                    int _y = tetromino.pos.y + y + dY;
-
-                    // If tetromino mesh is outside of the playing area return true
-                    if (_x < 0 || _x > 9 || _y < 0) return true;
-
-                    // Ignore any tetromino mesh that is above the playing area
-                    if (_y > 19) continue;
-
-                    // Return true if overlap found
-                    if (Data[_y][_x] != 0) return true;
-                }
-            }
-
-            return false;
-        }
-
-        public Vector2i GetPlacePos(Tetromino tetromino)
-        {
-            // For each iteration go one row down and check for collision
-            // Return when collision was found
-            for (int i = 0; i < 22; i++)
-            {
-                if (CheckCollisionAt(tetromino, 0, -i))
-                    return new Vector2i(tetromino.pos.x, tetromino.pos.y - i + 1);
-            }
-
-            throw new Exception("No ghost pos was found");
-        }
-
-        public int ClearLines()
-        {
-            int clearedLines = 0;
-
-            for (int i = 0; i < 20; i++)
-            {
-                // Check if line is complete
-                bool isComplete = true;
-                foreach (var square in Data[i])
-                {
-                    if (square == 0)
-                    {
-                        isComplete = false;
-                        break;
-                    }
-                }
-
-                // Clear line if complete
-                if (isComplete)
-                {
-                    clearedLines++;
-                    ClearLine(i);
-                    i--;
-                }
-            }
-
-            return clearedLines;
-        }
-
-        private void ClearLine(int i)
-        {
-            // Shift all rows above the i-th line one row down
-            for (int j = 0; j < 20; j++)
-            {
-                if ((i + j) == 19) break;
-                Data[i + j] = Data[i + j + 1];
-            }
-
-            // Create a new line for the last row
-            List<int> list = new List<int>();
-            for (int j = 0; j < 10; j++) list.Add(0);
-
-            Data[19] = list;
-        }
-    }
-
     public class MainLogic
     {
         public Grid Grid { get; private set; }
         public List<int> NextTetrominos { get; private set; }
         public Tetromino CurrTetromino { get; private set; }
+        public int? HoldingTetromino { get; private set; }
         public Score score { get; private set; }
-        public int Level { get; private set; } = 1;
+        public Level Level { get; private set; }
 
-        public float dropDefaultTime = 0.5f;
         public float timeTillDrop;
-        private float levelDifficulty = 1;
 
         private float DASInitialDelay = 0.13f;
         private float DASDelay = 0.08f;
         private float DASTimer = -1;
-        private bool skipDrop = false;
+        private bool  skipDrop = false;
+        private bool  softDrop = false;
 
+        private float lockTimer = 0.5f;
+        private bool lockTimerStarted = false;
 
         public MainLogic()
         {
-            timeTillDrop = dropDefaultTime;
             Grid = new Grid();
             NextTetrominos = new List<int>();
             score = new Score();
+            Level = new Level();
+            timeTillDrop = Level.DropTime();
+            HoldingTetromino = null;
 
             GetNextBag();
             GetNextTetromino();
@@ -272,12 +58,12 @@ namespace Tetris
 
         public void Update()
         {
-            timeTillDrop -= Time.deltaTime * levelDifficulty;
+            timeTillDrop -= Time.deltaTime;
 
-            if (timeTillDrop < 0 || skipDrop)
+            if (lockTimerStarted)
             {
-                // Handle collision if there is one
-                if (Grid.CheckCollisionAt(CurrTetromino, 0, -1))
+                lockTimer -= Time.deltaTime;
+                if (lockTimer <= 0 || skipDrop)
                 {
                     // Place tetromino
                     Grid.Place(CurrTetromino);
@@ -285,23 +71,38 @@ namespace Tetris
                     // Clear lines
                     int clearedLines = Grid.ClearLines();
 
-                    // Update score
+                    // Update score and level
                     if (clearedLines > 0) score.AddScore(clearedLines); else score.ComboReset();
+                    if (clearedLines > 0) Level.RemoveLines(clearedLines);
 
                     // Get next tetromino
                     GetNextTetromino();
+
+                    lockTimer = 0.5f;
+                    lockTimerStarted = false;
+
+                    skipDrop = false;
+                }
+            }
+
+            if (timeTillDrop < 0 || skipDrop)
+            {
+
+                // Handle collision if there is one
+                if (Grid.CheckCollisionAt(CurrTetromino, 0, -1))
+                {
+                    lockTimerStarted = true;
                 } else
                 {
                     // Drop tetromino 1 square and update score
                     CurrTetromino.pos.y--;
-                    score.SoftDropIncrement();
+                    if (softDrop) score.SoftDropIncrement();
                 }
 
-                timeTillDrop = dropDefaultTime;
-                skipDrop = false;
+                timeTillDrop = (softDrop) ? 0.033f : Level.DropTime();
             }
 
-            CheckInput();
+            HandleInput();
         }
 
         public void GetNextTetromino()
@@ -329,7 +130,7 @@ namespace Tetris
             }
         }
 
-        private void CheckInput()
+        private void HandleInput()
         {
             // Left Button - Shift to the left with DAS
             if (Input.Keyboard.Left == KeyState.down)
@@ -381,43 +182,59 @@ namespace Tetris
                 CurrTetromino.pos.y = y2;
             }
 
-            // Down Button - Increase falling speed
+            // Down Button
             if (Input.Keyboard.Down == KeyState.down)
             {
-                levelDifficulty *= 10;
+                softDrop = true;
+                timeTillDrop = 0.033f;
             }
 
-            // Down Button Up - Increase falling speed
+            // Down Button Up
             if (Input.Keyboard.Down == KeyState.up)
             {
-                levelDifficulty /= 10;
+                softDrop = false;
             }
 
             // Z Button
             if (Input.Keyboard.Z == KeyState.down)
             {
-                RotateLeft();
+                Rotate(false);
             }
 
             // X Button
             if (Input.Keyboard.X == KeyState.down)
             {
-                RotateRight();
+                Rotate(true);
             }
 
             // C Button
             if (Input.Keyboard.C == KeyState.down)
             {
-                //TODO
+                CycleHolding();
             }
         }
 
-        private void RotateRight()
+        private void CycleHolding()
         {
-            int wallKickIndex = GetKickIndex(CurrTetromino.rotation, true);
+            if (HoldingTetromino == null)
+            {
+                HoldingTetromino = CurrTetromino.type;
+                GetNextTetromino();
+            } else
+            {
+                var curr = CurrTetromino.type;
+                CurrTetromino = new Tetromino((int)HoldingTetromino);
+                HoldingTetromino = curr;
+            }
+        }
 
-            CurrTetromino.rotation++;
+        private void Rotate(bool clockwise)
+        {
+            int wallKickIndex = GetKickIndex(CurrTetromino.rotation, clockwise);
+
+            CurrTetromino.rotation += (clockwise) ? 1 : -1;
             if (CurrTetromino.rotation > 3) CurrTetromino.rotation = 0;
+            if (CurrTetromino.rotation < 0) CurrTetromino.rotation = 3;
 
             // New temp arr for storing new rotated tetromino
             bool[] temp = (bool[])CurrTetromino.data.Clone();
@@ -430,7 +247,7 @@ namespace Tetris
                     for (int x = 0; x < CurrTetromino.size; x++)
                     {
                         int index  = y * CurrTetromino.size + x;
-                        int index2 = 2 - y + x * 3;
+                        int index2 = (clockwise) ? 2 - y + x * 3 : y + 6 - x * 3;
                         CurrTetromino.data[index] = temp[index2];
                     }
                 }
@@ -448,6 +265,7 @@ namespace Tetris
                     }
                 }
             }
+
             // Rotate tetromino for size 4
             else if (CurrTetromino.size == 4)
             {
@@ -456,7 +274,7 @@ namespace Tetris
                     for (int x = 0; x < CurrTetromino.size; x++)
                     {
                         int index = y * CurrTetromino.size + x;
-                        int index2 = 3 - y + x * 4;
+                        int index2 = (clockwise) ? 3 - y + x * 4 : y + 12 - x * 4;
                         CurrTetromino.data[index] = temp[index2];
                     }
                 }
@@ -474,72 +292,7 @@ namespace Tetris
                     }
                 }
             }
-            if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateRight();
-        }
-
-        private void RotateLeft()
-        {
-            int wallKickIndex = GetKickIndex(CurrTetromino.rotation, false);
-
-            CurrTetromino.rotation--;
-            if (CurrTetromino.rotation < 0) CurrTetromino.rotation = 3;
-            
-            // New temp arr for storing new rotated tetromino
-            bool[] temp = (bool[])CurrTetromino.data.Clone();
-
-            // Rotate tetromino for size 3
-            if (CurrTetromino.size == 3)
-            {
-                for (int y = 0; y < CurrTetromino.size; y++)
-                {
-                    for (int x = 0; x < CurrTetromino.size; x++)
-                    {
-                        int index = y * CurrTetromino.size + x;
-                        int index2 = y + 6 - x * 3;
-                        CurrTetromino.data[index] = temp[index2];
-                    }
-                }
-                if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        Vector2i kickOffset = Tetrominos.WallKick[wallKickIndex, i];
-                        if (!Grid.CheckCollisionAt(CurrTetromino, kickOffset.x, kickOffset.y))
-                        {
-                            CurrTetromino.pos.x += kickOffset.x;
-                            CurrTetromino.pos.y += kickOffset.y;
-                            return;
-                        }
-                    }
-                }
-            }
-            // Rotate tetromino for size 4
-            else if (CurrTetromino.size == 4)
-            {
-                for (int y = 0; y < CurrTetromino.size; y++)
-                {
-                    for (int x = 0; x < CurrTetromino.size; x++)
-                    {
-                        int index = y * CurrTetromino.size + x;
-                        int index2 = y + 12 - x * 4;
-                        CurrTetromino.data[index] = temp[index2];
-                    }
-                }
-                if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        Vector2i kickOffset = Tetrominos.WallKickI[wallKickIndex, i];
-                        if (!Grid.CheckCollisionAt(CurrTetromino, kickOffset.x, kickOffset.y))
-                        {
-                            CurrTetromino.pos.x += kickOffset.x;
-                            CurrTetromino.pos.y += kickOffset.y;
-                            return;
-                        }
-                    }
-                }
-            }
-            if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) RotateLeft();
+            if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) Rotate(!clockwise);
         }
 
         private int GetKickIndex(int rotation, bool clockwise)
