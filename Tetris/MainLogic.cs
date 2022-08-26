@@ -33,12 +33,14 @@ namespace Tetris
         public Level Level { get; private set; }
 
         public float timeTillDrop;
+        public int clearText = 0;
 
         private float DASInitialDelay = 0.13f;
         private float DASDelay = 0.08f;
         private float DASTimer = -1;
         private bool  skipDrop = false;
         private bool  softDrop = false;
+        private bool  tSpin = false;
 
         private float lockTimer = 0.5f;
         private bool lockTimerStarted = false;
@@ -59,6 +61,7 @@ namespace Tetris
         public void Update()
         {
             timeTillDrop -= Time.deltaTime;
+            clearText = 0;
 
             if (lockTimerStarted)
             {
@@ -72,8 +75,15 @@ namespace Tetris
                     int clearedLines = Grid.ClearLines();
 
                     // Update score and level
-                    if (clearedLines > 0) score.AddScore(clearedLines); else score.ComboReset();
-                    if (clearedLines > 0) Level.RemoveLines(clearedLines);
+                    // and Handle T-Spins
+                    if (clearedLines > 0)
+                    {
+                        if (tSpin) clearText = score.AddScore(clearedLines + 5);
+                        else       clearText = score.AddScore(clearedLines);
+
+                        tSpin = false;
+                        Level.RemoveLines(clearedLines);
+                    } else score.ComboReset();
 
                     // Get next tetromino
                     GetNextTetromino();
@@ -230,6 +240,7 @@ namespace Tetris
 
         private void Rotate(bool clockwise)
         {
+            lockTimer = 0.5f;
             int wallKickIndex = GetKickIndex(CurrTetromino.rotation, clockwise);
 
             CurrTetromino.rotation += (clockwise) ? 1 : -1;
@@ -246,7 +257,7 @@ namespace Tetris
                 {
                     for (int x = 0; x < CurrTetromino.size; x++)
                     {
-                        int index  = y * CurrTetromino.size + x;
+                        int index = y * CurrTetromino.size + x;
                         int index2 = (clockwise) ? 2 - y + x * 3 : y + 6 - x * 3;
                         CurrTetromino.data[index] = temp[index2];
                     }
@@ -260,7 +271,7 @@ namespace Tetris
                         {
                             CurrTetromino.pos.x += kickOffset.x;
                             CurrTetromino.pos.y += kickOffset.y;
-                            return;
+                            break;
                         }
                     }
                 }
@@ -287,12 +298,20 @@ namespace Tetris
                         {
                             CurrTetromino.pos.x += kickOffset.x;
                             CurrTetromino.pos.y += kickOffset.y;
-                            return;
+                            break;
                         }
                     }
                 }
             }
             if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) Rotate(!clockwise);
+            else if (CurrTetromino.type == 5)
+            {
+                var pos = CurrTetromino.pos;
+                if (pos.y > 16) return;
+
+                if (Grid.Data[pos.y + 2][pos.x] != 0 || Grid.Data[pos.y + 2][pos.x + 2] != 0)
+                    tSpin = true;
+            }
         }
 
         private int GetKickIndex(int rotation, bool clockwise)

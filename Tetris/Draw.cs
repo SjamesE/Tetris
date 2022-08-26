@@ -9,8 +9,12 @@ namespace Tetris
         private readonly Vector2i gridOffset    = new Vector2i(147, 621);
         private readonly Vector2i nextOffset    = new Vector2i(503, 88);
         private readonly Vector2i holdingOffset = new Vector2i(36, 87);
+        private readonly int clearLineY = 250;
         private readonly int textPosL = 70;
         private readonly int textPosR = 535;
+
+        private float clearTextOpacity = 0;
+        private int clearText = 0;
 
         public void Update(MainLogic mainLogic)
         {
@@ -137,7 +141,64 @@ namespace Tetris
             lvlUpNo.Position = new SFML.System.Vector2f(textPosL - fr7.Width / 2, 310);
             Window.RenderWindow.Draw(lvlUpNo);
 
+            if (clearText == 0)
+                clearText = mainLogic.clearText;
+            DrawClearLineText();
+
             Window.RenderWindow.Display();
+        }
+
+        private void DrawClearLineText()
+        {
+            if (clearText == 0) return;
+            if (clearTextOpacity == 0)
+            {
+                clearTextOpacity = 255;
+            }
+
+            string text;
+
+            switch (Math.Round(clearText / 2d))
+            {
+                case 1:
+                    text = "Tetris!";
+                    break;
+                case 2:
+                    text = "T-Spin Single!";
+                    break;
+                case 3:
+                    text = "T-Spin Double!";
+                    break;
+                case 4:
+                    text = "T-Spin Triple!";
+                    break;
+                default:
+                    text = "";
+                    break;
+            }
+            if (clearText % 2 == 0)
+            {
+                Text backToBack = new Text("Back to back", Assets.Font);
+                FloatRect fr = backToBack.GetLocalBounds();
+                backToBack.Position = new SFML.System.Vector2f(Window.WINDOW_WIDTH / 2 - fr.Width / 2, clearLineY - 40);
+                backToBack.FillColor = new Color(255, 255, 255, (byte)clearTextOpacity);
+                Window.RenderWindow.Draw(backToBack);
+            }
+
+            Text ClearLineText = new Text(text, Assets.Font);
+            FloatRect fr1 = ClearLineText.GetLocalBounds();
+            ClearLineText.Position = new SFML.System.Vector2f(Window.WINDOW_WIDTH / 2 - fr1.Width / 2, clearLineY);
+            ClearLineText.FillColor = new Color(255, 255, 255, (byte)clearTextOpacity);
+            Window.RenderWindow.Draw(ClearLineText);
+
+            if (clearTextOpacity > 180) clearTextOpacity -= Time.deltaTime * 75;
+            else clearTextOpacity -= Time.deltaTime * 150;
+
+            if (clearTextOpacity < 100)
+            {
+                clearTextOpacity = 0;
+                clearText = 0;
+            }
         }
     }
 }
