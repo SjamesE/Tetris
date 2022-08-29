@@ -155,10 +155,9 @@ namespace Tetris
             {
                 clearTextOpacity = 255;
             }
-
             string text;
 
-            switch (Math.Round(clearText / 2d))
+            switch (Math.Round((clearText + 0.1d) / 2d))
             {
                 case 1:
                     text = "Tetris!";
@@ -200,5 +199,14 @@ namespace Tetris
                 clearText = 0;
             }
         }
+
+        //private void DrawText(string text, Vector2i pos, bool centered = true, uint alpha = 255)
+        //{
+        //    Text txt = new Text(text, Assets.Font);
+        //    int xOffset = (centered) ? (int)-txt.GetLocalBounds().Width : 0;
+        //
+        //    txt.Position = new SFML.System.Vector2f(pos.x + xOffset, pos.y);
+        //
+        //}
     }
 }

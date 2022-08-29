@@ -68,6 +68,13 @@ namespace Tetris
                 lockTimer -= Time.deltaTime;
                 if (lockTimer <= 0 || skipDrop)
                 {
+                    if (!Grid.CheckCollisionAt(CurrTetromino, 0, -1))
+                    {
+                        lockTimerStarted = false;
+                        lockTimer = 0.5f;
+                        return;
+                    }
+
                     // Place tetromino
                     Grid.Place(CurrTetromino);
 
@@ -78,10 +85,9 @@ namespace Tetris
                     // and Handle T-Spins
                     if (clearedLines > 0)
                     {
-                        if (tSpin) clearText = score.AddScore(clearedLines + 5);
+                        if (tSpin) clearText = score.AddScore(clearedLines + 4);
                         else       clearText = score.AddScore(clearedLines);
 
-                        tSpin = false;
                         Level.RemoveLines(clearedLines);
                     } else score.ComboReset();
 
@@ -91,6 +97,7 @@ namespace Tetris
                     lockTimer = 0.5f;
                     lockTimerStarted = false;
 
+                    tSpin = false;
                     skipDrop = false;
                 }
             }
@@ -236,6 +243,8 @@ namespace Tetris
                 CurrTetromino = new Tetromino((int)HoldingTetromino);
                 HoldingTetromino = curr;
             }
+            lockTimer = 0.5f;
+            tSpin = false;
         }
 
         private void Rotate(bool clockwise)
