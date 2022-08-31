@@ -29,6 +29,7 @@ namespace Tetris
             List<List<int>> gridData = mainLogic.Grid.Data;
             Tetromino currTetromino = mainLogic.CurrTetromino;
             Texture texture = new Texture(1, 1);
+            Texture texture2 = new Texture(1, 1);
 
             Window.RenderWindow.Clear(backgroundColor);
             Sprite sprite;
@@ -116,7 +117,7 @@ namespace Tetris
             // Draw Level and Progress Bar
             DrawText("Level", new Vector2i(textPosR, 500));
             DrawText(mainLogic.Level.Lvl.ToString(), new Vector2i(textPosR - 13, 544), fontSize: 80);
-            DrawProgressBar(ref texture, new Vector2i(475, 535), radius + 2, 20, 1, new Color( 59,  59,  59), new Color( 66,  66,  66), 360);
+            DrawProgressBar(ref texture2, new Vector2i(475, 535), radius + 2, 20, 1, new Color( 59,  59,  59), new Color( 66,  66,  66), 360);
             DrawProgressBar(ref texture, new Vector2i(479, 539), radius - 2, 10, 2, new Color(180, 180, 180), new Color(150, 150, 150), (1f - (float)mainLogic.Level.LinesLeft / (float)mainLogic.Level.LinesForNextLvl) * 360);
 
             // Draw Lines
@@ -160,6 +161,7 @@ namespace Tetris
             Window.RenderWindow.Display();
 
             texture.Dispose();
+            texture2.Dispose();
         }
 
         private void DrawProgressBar(ref Texture texture, Vector2i pos, float radius, int width, int borderWidth, Color fillColor, Color borderColor, float fillAngle)
