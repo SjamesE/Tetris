@@ -3,6 +3,7 @@ using System.IO;
 using SFML.System;
 using SFML.Graphics;
 using SFML.Audio;
+using System.Text;
 
 namespace Tetris
 {
@@ -16,6 +17,8 @@ namespace Tetris
         public static List<Texture> Block { get; private set; }
         public static List<Texture> Preview { get; private set; }
         public static Font Font { get; private set; }
+
+        private static string path = @"Assets\Data.dat";
 
         static Assets()
         {
@@ -51,6 +54,44 @@ namespace Tetris
 
             // Load font
             Font = new Font("Assets/Font.ttf");
+        }
+
+        public static void SaveHighScore(int score)
+        {
+            // Data to save
+            string encriptedData = XOR(Convert.ToString((long)score * 3895177120L, 2));
+
+            // Delete existing file
+            if (File.Exists(path)) File.Delete(path);
+
+            // Create a file to write to
+            using (var sw = File.CreateText(path))
+            {
+                sw.Write(encriptedData);
+            }
+        }
+
+        public static int RetreiveHighScore()
+        {
+            if (!File.Exists(path)) return 0;
+
+            string data = XOR(File.ReadAllText(path));
+            long score = Convert.ToInt64(data, 2) / 3895177120L;
+            
+            return (int)score;
+        }
+
+        private static string XOR(string data)
+        {
+            string key = "9eJ;+^/Ic>c{XcgH";
+
+            var result = new StringBuilder();
+
+            // XOR Data
+            for (int i = 0; i < data.Length; i++)
+                result.Append((char)((uint)data[i] ^ (uint)key[i % key.Length]));
+
+            return result.ToString();
         }
     }
 }

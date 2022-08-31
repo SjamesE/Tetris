@@ -31,6 +31,7 @@ namespace Tetris
         public int? HoldingTetromino { get; private set; }
         public Score score { get; private set; }
         public Level Level { get; private set; }
+        public int HiScore { get; private set; }
 
         public float timeTillDrop;
         public int clearText = 0;
@@ -56,6 +57,8 @@ namespace Tetris
 
             GetNextBag();
             GetNextTetromino();
+
+            HiScore = Assets.RetreiveHighScore();
         }
 
         public void Update()

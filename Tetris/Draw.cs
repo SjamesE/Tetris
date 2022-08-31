@@ -97,49 +97,21 @@ namespace Tetris
             }
 
             // Draw Score
-            Text scoreText = new Text("Score", Assets.Font);
-            FloatRect fr = scoreText.GetLocalBounds();
-            scoreText.Position = new SFML.System.Vector2f(textPosL - fr.Width / 2, 200);
-            Window.RenderWindow.Draw(scoreText);
-
-            Text score = new Text(mainLogic.score.Total.ToString(), Assets.Font);
-            FloatRect fr1 = score.GetLocalBounds();
-            score.Position = new SFML.System.Vector2f(textPosL - fr1.Width / 2, 230);
-            Window.RenderWindow.Draw(score);
+            DrawText("Score", new Vector2i(textPosL, 200));
+            DrawText(mainLogic.score.Total.ToString(), new Vector2i(textPosL, 230));
 
             // Draw Next & Hold text
-            Text nextTxt = new Text("Next", Assets.Font);
-            FloatRect fr2 = nextTxt.GetLocalBounds();
-            nextTxt.Position = new SFML.System.Vector2f(textPosR - fr2.Width / 2, 25);
-            Window.RenderWindow.Draw(nextTxt);
-
-            Text hold = new Text("Hold", Assets.Font);
-            FloatRect fr3 = hold.GetLocalBounds();
-            hold.Position = new SFML.System.Vector2f(textPosL - fr3.Width / 2, 25);
-            Window.RenderWindow.Draw(hold);
+            DrawText("Next", new Vector2i(textPosR, 25));
+            DrawText("Hold", new Vector2i(textPosL, 25));
 
             // Draw Level
-            Text level = new Text("Level", Assets.Font);
-            FloatRect fr4 = level.GetLocalBounds();
-            level.Position = new SFML.System.Vector2f(textPosR - fr4.Width / 2, 500);
-            Window.RenderWindow.Draw(level);
-
-            Text levelNo = new Text(mainLogic.Level.Lvl.ToString(), Assets.Font);
-            FloatRect fr5 = levelNo.GetLocalBounds();
-            levelNo.Position = new SFML.System.Vector2f(textPosR - fr5.Width / 2 - 10, 530);
-            levelNo.CharacterSize = 80;
-            Window.RenderWindow.Draw(levelNo);
+            DrawText("Level", new Vector2i(textPosR, 500));
+            DrawText(mainLogic.Level.Lvl.ToString(), new Vector2i(textPosR - 10, 530), fontSize: 80);
 
             // Draw LinesTillLvlUp
-            Text lvlUpText = new Text("Lvl up in", Assets.Font);
-            FloatRect fr6 = lvlUpText.GetLocalBounds();
-            lvlUpText.Position = new SFML.System.Vector2f(textPosL - fr6.Width / 2, 280);
-            Window.RenderWindow.Draw(lvlUpText);
-
-            Text lvlUpNo = new Text(mainLogic.Level.LinesLeft.ToString() + "Lines", Assets.Font);
-            FloatRect fr7 = lvlUpNo.GetLocalBounds();
-            lvlUpNo.Position = new SFML.System.Vector2f(textPosL - fr7.Width / 2, 310);
-            Window.RenderWindow.Draw(lvlUpNo);
+            DrawText("Lines to", new Vector2i(textPosL, 280));
+            DrawText("clear", new Vector2i(textPosL, 310));
+            DrawText(mainLogic.Level.LinesLeft.ToString(), new Vector2i(textPosL, 340), fontSize: 35);
 
             if (clearText == 0)
                 clearText = mainLogic.clearText;
@@ -176,19 +148,9 @@ namespace Tetris
                     break;
             }
             if (clearText % 2 == 0)
-            {
-                Text backToBack = new Text("Back to back", Assets.Font);
-                FloatRect fr = backToBack.GetLocalBounds();
-                backToBack.Position = new SFML.System.Vector2f(Window.WINDOW_WIDTH / 2 - fr.Width / 2, clearLineY - 40);
-                backToBack.FillColor = new Color(255, 255, 255, (byte)clearTextOpacity);
-                Window.RenderWindow.Draw(backToBack);
-            }
+                DrawText("Back to back", new Vector2i((int)Window.WINDOW_WIDTH / 2, clearLineY - 40), alpha: (byte)clearTextOpacity);
 
-            Text ClearLineText = new Text(text, Assets.Font);
-            FloatRect fr1 = ClearLineText.GetLocalBounds();
-            ClearLineText.Position = new SFML.System.Vector2f(Window.WINDOW_WIDTH / 2 - fr1.Width / 2, clearLineY);
-            ClearLineText.FillColor = new Color(255, 255, 255, (byte)clearTextOpacity);
-            Window.RenderWindow.Draw(ClearLineText);
+            DrawText(text, new Vector2i((int)Window.WINDOW_WIDTH / 2, clearLineY), alpha: (byte)clearTextOpacity);
 
             if (clearTextOpacity > 180) clearTextOpacity -= Time.deltaTime * 75;
             else clearTextOpacity -= Time.deltaTime * 150;
@@ -200,13 +162,17 @@ namespace Tetris
             }
         }
 
-        //private void DrawText(string text, Vector2i pos, bool centered = true, uint alpha = 255)
-        //{
-        //    Text txt = new Text(text, Assets.Font);
-        //    int xOffset = (centered) ? (int)-txt.GetLocalBounds().Width : 0;
-        //
-        //    txt.Position = new SFML.System.Vector2f(pos.x + xOffset, pos.y);
-        //
-        //}
+        private void DrawText(string text, Vector2i pos, bool centered = true, byte alpha = 255, uint fontSize = 0)
+        {
+            Text txt = new Text(text, Assets.Font);
+        
+            int xOffset = (centered) ? (int)-txt.GetLocalBounds().Width / 2 : 0;
+            txt.Position = new SFML.System.Vector2f(pos.x + xOffset, pos.y);
+            txt.FillColor = new Color(255, 255, 255, alpha);
+
+            if (fontSize != 0) txt.CharacterSize = fontSize;
+
+            Window.RenderWindow.Draw(txt);
+        }
     }
 }
