@@ -32,6 +32,7 @@ namespace Tetris
         public Score score { get; private set; }
         public Level Level { get; private set; }
         public int HiScore { get; private set; }
+        public bool gameOver { get; private set; } = false;
 
         public float timeTillDrop;
         public int clearText = 0;
@@ -42,9 +43,10 @@ namespace Tetris
         private bool  skipDrop = false;
         private bool  softDrop = false;
         private bool  tSpin = false;
+        private bool  canHold = true;
 
         private float lockTimer = 0.5f;
-        private bool lockTimerStarted = false;
+        private bool  lockTimerStarted = false;
 
         public MainLogic()
         {
@@ -63,6 +65,11 @@ namespace Tetris
 
         public void Update()
         {
+            if (gameOver)
+            {
+                HandleInput();
+            }
+
             timeTillDrop -= Time.deltaTime;
             clearText = 0;
 
@@ -79,7 +86,12 @@ namespace Tetris
                     }
 
                     // Place tetromino
-                    Grid.Place(CurrTetromino);
+                    if (!Grid.Place(CurrTetromino))
+                    {
+                        gameOver = true;
+
+                        return;
+                    }
 
                     // Clear lines
                     int clearedLines = Grid.ClearLines();
@@ -102,6 +114,7 @@ namespace Tetris
 
                     tSpin = false;
                     skipDrop = false;
+                    canHold = true;
                 }
             }
 
@@ -152,6 +165,16 @@ namespace Tetris
 
         private void HandleInput()
         {
+            if (gameOver)
+            {
+                // R Button
+                if (Input.Keyboard.R == KeyState.down)
+                {
+                    if (gameOver) Reset();
+                }
+                return;
+            }
+
             // Left Button - Shift to the left with DAS
             if (Input.Keyboard.Left == KeyState.down)
             {
@@ -159,7 +182,8 @@ namespace Tetris
 
                 DASTimer = DASInitialDelay;
 
-            } else if (Input.Keyboard.Left == KeyState.pressed)
+            } 
+            else if (Input.Keyboard.Left == KeyState.pressed)
             {
                 DASTimer -= Time.deltaTime;
                 if (DASTimer < 0)
@@ -177,7 +201,8 @@ namespace Tetris
 
                 DASTimer = DASInitialDelay;
 
-            } else if (Input.Keyboard.Right == KeyState.pressed)
+            } 
+            else if (Input.Keyboard.Right == KeyState.pressed)
             {
                 DASTimer -= Time.deltaTime;
                 if (DASTimer < 0)
@@ -230,8 +255,41 @@ namespace Tetris
             // C Button
             if (Input.Keyboard.C == KeyState.down)
             {
-                CycleHolding();
+                if (canHold)
+                {
+                    CycleHolding();
+                    canHold = false;
+                }
             }
+        }
+
+        private void Reset()
+        {
+            if (score.Total > HiScore) Assets.SaveHighScore(score.Total);
+            HiScore = score.Total;
+
+            gameOver = false;
+
+            Grid = new Grid();
+            NextTetrominos = new List<int>();
+            score = new Score();
+            Level = new Level();
+            timeTillDrop = Level.DropTime();
+            HoldingTetromino = null;
+
+            clearText = 0;
+            DASTimer = -1;
+            skipDrop = false;
+            softDrop = false;
+            tSpin = false;
+            canHold = true;
+
+            lockTimer = 0.5f;
+            lockTimerStarted = false;
+
+            GetNextBag();
+            GetNextTetromino();
+
         }
 
         private void CycleHolding()

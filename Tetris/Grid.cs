@@ -6,6 +6,7 @@ namespace Tetris
     {
         // 2D list of colors
         public List<List<int>> Data { get; private set; } = new List<List<int>>();
+
         public Grid()
         {
             // Initialize Grid Data
@@ -18,7 +19,7 @@ namespace Tetris
         }
 
         // Place tetromino - return number of cleared lines
-        public void Place(Tetromino tetromino)
+        public bool Place(Tetromino tetromino)
         {
             // Get place position
             Vector2i placePos = GetPlacePos(tetromino);
@@ -34,9 +35,13 @@ namespace Tetris
                     // Continue if tetromino mesh at index is empty (false)
                     if (!tetromino.data[index]) continue;
 
+                    if (placePos.y + y >= 19) return false;
+
                     Data[placePos.y + y][placePos.x + x] = tetromino.type;
                 }
             }
+
+            return true;
         }
 
         public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
