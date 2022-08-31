@@ -17,6 +17,7 @@ namespace Tetris
 
             RenderWindow = new RenderWindow(new VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Tetris", Styles.Titlebar | Styles.Close, cs);
             RenderWindow.Closed += Close;
+            RenderWindow.SetIcon(Assets.Icon.Size.X, Assets.Icon.Size.Y, Assets.Icon.CopyToImage().Pixels);
         }
 
         private static void Close(object sender, EventArgs e)

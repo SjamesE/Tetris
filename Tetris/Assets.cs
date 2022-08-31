@@ -17,6 +17,7 @@ namespace Tetris
         public static List<Texture> Block { get; private set; }
         public static List<Texture> Preview { get; private set; }
         public static Font Font { get; private set; }
+        public static Texture Icon { get; private set; }
 
         private static string path = @"Assets\Data.dat";
 
@@ -54,6 +55,9 @@ namespace Tetris
 
             // Load font
             Font = new Font("Assets/Font.ttf");
+
+            // Load icon
+            Icon = new Texture("Assets/Icon.png");
         }
 
         public static void SaveHighScore(int score)
