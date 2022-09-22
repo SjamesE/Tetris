@@ -73,6 +73,8 @@
             int bonusScore = combo ? 50 : 0;
             Total += (moveScore + bonusScore) * Level;
             combo = true;
+            if (type != 4) Assets.ClrLn.Play(); else Assets.Tetris.Play();
+
 
             return clearText;
         }

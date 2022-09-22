@@ -34,19 +34,26 @@ namespace Tetris
         public int HiScore { get; private set; }
         public bool gameOver { get; private set; } = false;
 
+        public List<int> fullLines = new();
         public float timeTillDrop;
-        public int clearText = 0;
+        public int   clearText = 0;
 
+        // DAS
         private float DASInitialDelay = 0.13f;
         private float DASDelay = 0.08f;
         private float DASTimer = -1;
-        private bool  skipDrop = false;
-        private bool  softDrop = false;
-        private bool  tSpin = false;
-        private bool  canHold = true;
 
+        // Flags
+        private bool skipDrop = false;
+        private bool softDrop = false;
+        private bool tSpin = false;
+        private bool canHold = true;
+        private bool lockTimerStarted = false;
+        public  bool clrAnim = false;
+
+        // Timers
+        public  float clrAnimTimer = 0f;
         private float lockTimer = 0.5f;
-        private bool  lockTimerStarted = false;
 
         public MainLogic()
         {
@@ -67,59 +74,101 @@ namespace Tetris
         {
             if (gameOver)
             {
-                HandleInput();
+                // Check if the R Button was pressed
+                if (Input.Keyboard.R == KeyState.down)
+                {
+                    Reset();
+                }
+                return;
+            }
+
+            if (clrAnim)
+            {
+                clrAnimTimer -= Time.deltaTime;
+                if (clrAnimTimer <= 0)
+                {
+                    // Get next tetromino
+                    GetNextTetromino();
+
+                    // Clear lines
+                    Grid.ClearLines(fullLines);
+                    fullLines.Clear();
+
+                    // Reset flags and timers
+                    score.ComboReset();
+                    lockTimer = 0.5f;
+
+                    tSpin = false;
+                    canHold = true;
+                    clrAnim = false;
+                    skipDrop = false;
+                    lockTimerStarted = false;
+                }
+                return;
             }
 
             timeTillDrop -= Time.deltaTime;
             clearText = 0;
 
+            // Handle placing of tetromino along with line clears
+            // After the lockTimer reached 0
             if (lockTimerStarted)
             {
+                if (!Grid.CheckCollisionAt(CurrTetromino, 0, -1))
+                {
+                    lockTimerStarted = false;
+                    lockTimer = 0.5f;
+                    return;
+                }
                 lockTimer -= Time.deltaTime;
                 if (lockTimer <= 0 || skipDrop)
                 {
-                    if (!Grid.CheckCollisionAt(CurrTetromino, 0, -1))
-                    {
-                        lockTimerStarted = false;
-                        lockTimer = 0.5f;
-                        return;
-                    }
 
                     // Place tetromino
-                    if (!Grid.Place(CurrTetromino))
-                    {
-                        gameOver = true;
-
-                        return;
-                    }
+                    Grid.Place(CurrTetromino);
+                    Assets.Place.Play();
 
                     // Clear lines
-                    int clearedLines = Grid.ClearLines();
+                    fullLines = Grid.CheckFullLines();
+                    int clrdLinesCoun = fullLines.Count;
 
                     // Update score and level
                     // and Handle T-Spins
-                    if (clearedLines > 0)
+                    if (clrdLinesCoun > 0)
                     {
-                        if (tSpin) clearText = score.AddScore(clearedLines + 4);
-                        else       clearText = score.AddScore(clearedLines);
+                        if (tSpin) clearText = score.AddScore(clrdLinesCoun + 4);
+                        else       clearText = score.AddScore(clrdLinesCoun);
 
-                        Level.RemoveLines(clearedLines);
-                    } else score.ComboReset();
+                        clrAnim = true;
+                        clrAnimTimer = .50f;
+                        Level.RemoveLines(clrdLinesCoun);
+                        return;
+                    } else
+                    {
+                        // Get next tetromino
+                        GetNextTetromino();
 
-                    // Get next tetromino
-                    GetNextTetromino();
+                        // Clear lines
+                        Grid.ClearLines(fullLines);
 
-                    lockTimer = 0.5f;
-                    lockTimerStarted = false;
+                        // Reset flags and timers
+                        score.ComboReset();
+                        lockTimer = 0.5f;         
+                        lockTimerStarted = false; 
 
-                    tSpin = false;
-                    skipDrop = false;
-                    canHold = true;
+                        tSpin = false;
+                        skipDrop = false;
+                        canHold = true;
+                    }
                 }
             }
 
+            // Check for collision
+            // No collision -> lower tetromino by 1
+            // Update timeTillDrop
             if (timeTillDrop < 0 || skipDrop)
             {
+                fullLines = new();
 
                 // Handle collision if there is one
                 if (Grid.CheckCollisionAt(CurrTetromino, 0, -1))
@@ -130,6 +179,7 @@ namespace Tetris
                     // Drop tetromino 1 square and update score
                     CurrTetromino.pos.y--;
                     if (softDrop) score.SoftDropIncrement();
+                    Assets.Move.Play();
                 }
 
                 timeTillDrop = (softDrop) ? 0.033f : Level.DropTime();
@@ -146,6 +196,12 @@ namespace Tetris
 
             // If the queue is shorter than 5 (the amount of tetrominos showed on the screen) get a new bag (7 tetrominos)
             if (NextTetrominos.Count < 5) GetNextBag();
+
+            if (Grid.CheckCollisionAt(CurrTetromino, 0, 0))
+            {
+                gameOver = true;
+                Assets.Die.Play();
+            }
         }
 
         public void GetNextBag()
@@ -165,20 +221,14 @@ namespace Tetris
 
         private void HandleInput()
         {
-            if (gameOver)
-            {
-                // R Button
-                if (Input.Keyboard.R == KeyState.down)
-                {
-                    if (gameOver) Reset();
-                }
-                return;
-            }
-
             // Left Button - Shift to the left with DAS
             if (Input.Keyboard.Left == KeyState.down)
             {
-                if (!Grid.CheckCollisionAt(CurrTetromino, -1, 0)) CurrTetromino.pos.x--;
+                if (!Grid.CheckCollisionAt(CurrTetromino, -1, 0))
+                {
+                    CurrTetromino.pos.x--;
+                    Assets.Move.Play();
+                }
 
                 DASTimer = DASInitialDelay;
 
@@ -188,8 +238,12 @@ namespace Tetris
                 DASTimer -= Time.deltaTime;
                 if (DASTimer < 0)
                 {
-                    if (!Grid.CheckCollisionAt(CurrTetromino, -1, 0)) CurrTetromino.pos.x--;
-
+                    if (!Grid.CheckCollisionAt(CurrTetromino, -1, 0))
+                    {
+                        CurrTetromino.pos.x--;
+                        Assets.Move.Play();
+                    }
+                    
                     DASTimer = DASDelay;
                 }
             }
@@ -197,7 +251,11 @@ namespace Tetris
             // Right Button - Shift to the right with DAS
             if (Input.Keyboard.Right == KeyState.down)
             {
-                if (!Grid.CheckCollisionAt(CurrTetromino, 1, 0)) CurrTetromino.pos.x++;
+                if (!Grid.CheckCollisionAt(CurrTetromino, 1, 0))
+                {
+                    CurrTetromino.pos.x++;
+                    Assets.Move.Play();
+                }
 
                 DASTimer = DASInitialDelay;
 
@@ -207,7 +265,11 @@ namespace Tetris
                 DASTimer -= Time.deltaTime;
                 if (DASTimer < 0)
                 {
-                    if (!Grid.CheckCollisionAt(CurrTetromino, 1, 0)) CurrTetromino.pos.x++;
+                    if (!Grid.CheckCollisionAt(CurrTetromino, 1, 0))
+                    {
+                        CurrTetromino.pos.x++;
+                        Assets.Move.Play();
+                    }
 
                     DASTimer = DASDelay;
                 }
@@ -259,6 +321,7 @@ namespace Tetris
                 {
                     CycleHolding();
                     canHold = false;
+                    Assets.Move.Play();
                 }
             }
         }

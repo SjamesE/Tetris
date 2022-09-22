@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using SFML.System;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.Audio;
 using System.Text;
 
@@ -16,8 +13,13 @@ namespace Tetris
         public static List<Texture> Tetrominos { get; private set; }
         public static List<Texture> Block { get; private set; }
         public static List<Texture> Preview { get; private set; }
-        public static Font Font { get; private set; }
+        public static SFML.Graphics.Font Font { get; private set; }
         public static Texture Icon { get; private set; }
+        public static Sound Move { get; private set; }
+        public static Sound ClrLn { get; private set; }
+        public static Sound Tetris { get; private set; }
+        public static Sound Place { get; private set; }
+        public static Sound Die { get; private set; }
 
         private static string path = @"Assets\Data.dat";
 
@@ -54,10 +56,17 @@ namespace Tetris
             Preview[3] = temp;
 
             // Load font
-            Font = new Font("Assets/Font.ttf");
+            Font = new SFML.Graphics.Font("Assets/Font.ttf");
 
             // Load icon
             Icon = new Texture("Assets/Icon.png");
+
+            // Load Sounds
+            Die = new Sound(new SoundBuffer("Assets/Die.wav"));
+            Move = new Sound(new SoundBuffer("Assets/Move.wav"));
+            Place = new Sound(new SoundBuffer("Assets/Place.wav"));
+            ClrLn = new Sound(new SoundBuffer("Assets/LnClear.wav"));
+            Tetris = new Sound(new SoundBuffer("Assets/Tetris.wav"));
         }
 
         public static void SaveHighScore(int score)

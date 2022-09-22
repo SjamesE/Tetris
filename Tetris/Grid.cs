@@ -10,7 +10,7 @@ namespace Tetris
         public Grid()
         {
             // Initialize Grid Data
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 22; i++)
             {
                 List<int> list = new List<int>();
                 for (int j = 0; j < 10; j++) list.Add(0);
@@ -19,7 +19,7 @@ namespace Tetris
         }
 
         // Place tetromino - return number of cleared lines
-        public bool Place(Tetromino tetromino)
+        public void Place(Tetromino tetromino)
         {
             // Get place position
             Vector2i placePos = GetPlacePos(tetromino);
@@ -35,15 +35,20 @@ namespace Tetris
                     // Continue if tetromino mesh at index is empty (false)
                     if (!tetromino.data[index]) continue;
 
-                    if (placePos.y + y >= 19) return false;
+                    if (placePos.y + y >= 22) return;
 
                     Data[placePos.y + y][placePos.x + x] = tetromino.type;
                 }
             }
-
-            return true;
         }
 
+        /// <summary>
+        /// Return true if tetromino is overlapping grid mesh
+        /// </summary>
+        /// <param name="tetromino"></param>
+        /// <param name="dX"></param>
+        /// <param name="dY"></param>
+        /// <returns></returns>
         public bool CheckCollisionAt(Tetromino tetromino, int dX, int dY)
         {
             // Compare the mesh of the tetromino to the mesh of the grid
@@ -86,9 +91,9 @@ namespace Tetris
             throw new Exception("No ghost pos was found");
         }
 
-        public int ClearLines()
+        public List<int> CheckFullLines()
         {
-            int clearedLines = 0;
+            List<int> clearedLines = new();
 
             for (int i = 0; i < 20; i++)
             {
@@ -103,16 +108,24 @@ namespace Tetris
                     }
                 }
 
-                // Clear line if complete
+                // Add completed lines to a list
                 if (isComplete)
                 {
-                    clearedLines++;
-                    ClearLine(i);
-                    i--;
+                    clearedLines.Add(i);
                 }
             }
 
             return clearedLines;
+        }
+
+        public void ClearLines(List<int> linesToClear)
+        {
+            // Go trough the list and clear every line
+            for (int i = 0; i < linesToClear.Count; i++)
+            {
+                ClearLine(linesToClear[i] - i);
+
+            }
         }
 
         private void ClearLine(int i)

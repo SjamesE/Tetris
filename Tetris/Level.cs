@@ -28,19 +28,19 @@
                 case 9:
                     return 0.1f;
                 case 10:
-                    return 0.65f;
+                    return 0.065f;
                 case 11:
-                    return 0.45f;
+                    return 0.045f;
                 case 12:
-                    return 0.3f;
+                    return 0.03f;
                 case 13:
-                    return 0.2f;
+                    return 0.02f;
                 case 14:
-                    return 0.12f;
+                    return 0.012f;
                 case 15:
-                    return 0.1f;
+                    return 0.01f;
                 default:
-                    return 0.07f;
+                    return 0.007f;
             }
         }
 

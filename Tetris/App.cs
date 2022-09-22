@@ -16,19 +16,27 @@
             Assets.LoadAssets();
 
             float timeTillUpdate = FRAME_TIME;
-            //Window.RenderWindow.KeyPressed  += Input.OnKeyPress;
-            //Window.RenderWindow.KeyReleased += Input.OnKeyReleased;
 
-            while (Window.RenderWindow.IsOpen)
+            try
             {
-                Time.Update();
-
-                if (timeTillUpdate < Time.deltaTime)
+                while (Window.RenderWindow.IsOpen)
                 {
-                    Input.Update();
-                    Update();
-                    Time.NextFrame();
+                    Time.Update();
+
+                    if (timeTillUpdate < Time.deltaTime)
+                    {
+                        Input.Update();
+                        Update();
+                        Time.NextFrame();
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                string message = "An error has occured: \n\n    " + e.Message + "\n\n" + e.StackTrace;
+                string caption = "Unexpected Error";
+
+                MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
