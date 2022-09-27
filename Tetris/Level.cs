@@ -46,7 +46,7 @@
 
         public Level()
         {
-            Lvl = 10;
+            Lvl = 1;
             LinesLeft = LinesForNextLvl;
         }
 
