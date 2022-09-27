@@ -33,6 +33,7 @@ namespace Tetris
         public Level Level { get; private set; }
         public int HiScore { get; private set; }
         public bool gameOver { get; private set; } = false;
+        public bool paused { get; private set; } = false;
 
         public List<int> fullLines = new();
         public float timeTillDrop;
@@ -79,6 +80,12 @@ namespace Tetris
                 {
                     Reset();
                 }
+                return;
+            }
+
+            if (paused)
+            {
+                HandleInput();
                 return;
             }
 
@@ -221,6 +228,14 @@ namespace Tetris
 
         private void HandleInput()
         {
+            // P/ESC for Pause
+            if (Input.Keyboard.P == KeyState.down || Input.Keyboard.Escape == KeyState.down)
+            {
+                paused = !paused;
+            }
+
+            if (paused) return;
+
             // Left Button - Shift to the left with DAS
             if (Input.Keyboard.Left == KeyState.down)
             {
@@ -436,11 +451,14 @@ namespace Tetris
                     }
                 }
             }
+
             if (Grid.CheckCollisionAt(CurrTetromino, 0, 0)) Rotate(!clockwise);
             else if (CurrTetromino.type == 5)
             {
                 var pos = CurrTetromino.pos;
                 if (pos.y > 16) return;
+                if (pos.x > 7) 
+                    return;
 
                 if (Grid.Data[pos.y + 2][pos.x] != 0 || Grid.Data[pos.y + 2][pos.x + 2] != 0)
                     tSpin = true;

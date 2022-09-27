@@ -28,6 +28,14 @@ namespace Tetris
 
         public void Update(MainLogic mainLogic)
         {
+            if (mainLogic.paused)
+            {
+                Window.RenderWindow.Clear(backgroundColor);
+                DrawText("Paused", new Vector2i((int)Window.WINDOW_WIDTH / 2, 200), color: SFML.Graphics.Color.Red, outlineClr: new SFML.Graphics.Color(0, 0, 0, 150), outlineThickness: 1);
+                Window.RenderWindow.Display();
+                return;
+            }
+
             List<List<int>> gridData = mainLogic.Grid.Data;
             Tetromino currTetromino = mainLogic.CurrTetromino;
             Texture texture = new Texture(1, 1);

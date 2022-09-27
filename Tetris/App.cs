@@ -35,7 +35,7 @@
             {
                 string message = "An error has occured: \n\n    " + e.Message + "\n\n" + e.StackTrace;
                 string caption = "Unexpected Error";
-
+            
                 MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
